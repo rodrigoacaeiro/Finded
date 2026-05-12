@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="pt">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Página de Login — Finded</title>
+  <link rel="icon" type="image/x-icon" href="../images/Finded_Logobg.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/ui-fixes.css">
+  <style>
+    :root {
+      --bg: #0f1724;
+      --card: #0b1220;
+      --muted: #9aa4b2;
+      --accent: #6ee7b7;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      height: 100%
+    }
+
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(110, 231, 183, 0.06), transparent),
+        radial-gradient(900px 450px at 90% 90%, rgba(99, 102, 241, 0.04), transparent),
+        var(--bg);
+      color: #e6eef6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 980px;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .branding {
+      color: var(--muted);
+      padding: 32px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent);
+      box-shadow: 0 8px 30px rgba(2, 6, 23, 0.6);
+      min-height: 420px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 18px;
+      align-items: center;
+      text-align: center;
+    }
+
+    .logo-img {
+      width: 180px;
+      height: auto;
+      margin-bottom: 12px;
+      filter: drop-shadow(0px 4px 10px rgba(110, 231, 183, 0.2));
+    }
+
+    .hero {
+      font-size: 28px;
+      line-height: 1.05;
+      color: #eaf6f0;
+      margin-top: 8px;
+    }
+
+    .sub {
+      color: var(--muted);
+      max-width: 520px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--card), rgba(255, 255, 255, 0.02));
+      border-radius: 14px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6);
+      min-width: 320px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    label {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .input {
+      appearance: none;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: transparent;
+      padding: 12px 14px;
+      border-radius: 10px;
+      color: inherit;
+      outline: none;
+      font-size: 15px;
+    }
+
+    .input:focus {
+      box-shadow: 0 0 0 4px rgba(110, 231, 183, 0.06);
+      border-color: rgba(110, 231, 183, 0.25);
+    }
+
+    .btn {
+      background: linear-gradient(90deg, var(--accent), #5eead4);
+      border: none;
+      color: #032018;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 15px;
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.06);
+    }
+
+    .link {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .error {
+      color: #ffb4b4;
+      font-size: 13px;
+    }
+
+    .password-wrap {
+      position: relative;
+    }
+
+    .toggle-pass {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    @media (max-width:880px) {
+      .container {
+        grid-template-columns: 1fr;
+        max-width: 720px;
+      }
+
+      .branding {
+        order: 2;
+      }
+
+      .card {
+        order: 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container" role="main">
+    <section class="branding">
+      <img src="../images/Finded_Logobg.png" alt="Finded Logo" class="logo-img">
+      <h1 class="hero">Bem-vindo ao Finded 👋</h1>
+      <p class="sub">Sistema de gestão de stock e faturação com integração POS. Acede à tua conta para continuar.</p>
+    </section>
+
+    <aside class="card">
+      <h2 style="margin:0 0 6px 0;color:#fff">Entrar</h2>
+      <p class="muted" style="margin:0 0 18px 0">Usa o teu e-mail e palavra-passe.</p>
+
+      <form id="loginForm" novalidate>
+        <div>
+          <label for="email">E-mail</label>
+          <input class="input" id="email" name="email" type="email" required>
+          <div id="emailError" class="error" aria-live="polite"></div>
+        </div>
+
+        <div>
+          <label for="password">Palavra-passe</label>
+          <div class="password-wrap">
+            <input class="input" id="password" name="password" type="password" minlength="6" placeholder="••••••"
+              required>
+            <button type="button" class="toggle-pass" id="togglePass">Mostrar</button>
+          </div>
+          <div id="passError" class="error" aria-live="polite"></div>
+        </div>
+
+        <div style="margin-top:8px">
+          <button class="btn" id="submitBtn" type="submit">Entrar</button>
+        </div>
+
+        <p class="muted" style="margin-top:12px">Ainda não tens conta? <a class="link" href="register.html">Criar
+            conta</a></p>
+      </form>
+    </aside>
+  </main>
+
+  <script type="module">
+    import { auth } from "../js/firebase.js";
+    import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+    const form = document.getElementById('loginForm');
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+    const emailError = document.getElementById('emailError');
+    const passError = document.getElementById('passError');
+    const submitBtn = document.getElementById('submitBtn');
+    const togglePass = document.getElementById('togglePass');
+
+    function showPopup(message, type = "success") {
+      let popup = document.getElementById("successPopup");
+      if (!popup) {
+        popup = document.createElement("div");
+        popup.id = "successPopup";
+        popup.className = "popup";
+        document.body.appendChild(popup);
+      }
+      popup.textContent = (type === "success" ? "✅ " : "❌ ") + message;
+      popup.className = "popup show " + (type === "success" ? "success" : "error");
+      setTimeout(() => popup.classList.remove("show"), 3000);
+    }
+
+    togglePass.addEventListener('click', () => {
+      const t = password.type === "password" ? "text" : "password";
+      password.type = t;
+      togglePass.textContent = t === "password" ? "Mostrar" : "Ocultar";
+    });
+
+    function validateEmail() {
+      const val = email.value.trim();
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!val) { emailError.textContent = "O e-mail é obrigatório."; return false; }
+      if (!re.test(val)) { emailError.textContent = "Insere um e-mail válido."; return false; }
+      emailError.textContent = "";
+      return true;
+    }
+
+    function validatePassword() {
+      const val = password.value;
+      if (!val) { passError.textContent = "A palavra-passe é obrigatória."; return false; }
+      if (val.length < 6) { passError.textContent = "A palavra-passe tem de ter pelo menos 6 caracteres."; return false; }
+      passError.textContent = "";
+      return true;
+    }
+
+    async function signInUser(emailVal, passVal) {
+      try {
+        await signInWithEmailAndPassword(auth, emailVal, passVal);
+        showPopup("Login efetuado com sucesso!", "success");
+        window.location.href = "main.html";
+      } catch (err) {
+        alert("Erro ao iniciar sessão: " + err.message);
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Entrar";
+      }
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      emailError.textContent = "";
+      passError.textContent = "";
+      if (!validateEmail() || !validatePassword()) return;
+      submitBtn.disabled = true;
+      submitBtn.textContent = "A processar...";
+      signInUser(email.value.trim(), password.value);
+    });
+  </script>
+</body>
+
+</html>
+

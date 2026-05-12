@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ingredientes | Finded</title>
+  <link rel="icon" type="image/x-icon" href="../images/Finded_Logobg.png">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/ui-fixes.css">
+  <style>
+    :root {
+      --bg: #071023;
+      --card: #0f1724;
+      --muted: #9aa4b2;
+      --accent: #6ee7b7;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: linear-gradient(180deg, #071023 0%, #081426 100%);
+      color: #e6eef6;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 28px auto;
+      padding: 18px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      background: linear-gradient(90deg, var(--accent), #5eead4);
+      border: none;
+      color: #032018;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .ghost {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 8px;
+      border-radius: 8px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    /* 🔴 NOVO — Torna o botão Eliminar vermelho */
+    .danger {
+      margin-left: 6px;
+      background: #f87171;
+      color: #fff
+    }
+
+    .card {
+      background: var(--card);
+      padding: 16px;
+      border-radius: 12px;
+      margin-top: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      color: #e6eef6;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    tbody td {
+      padding: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.02);
+    }
+
+    input,
+    select {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 8px;
+      border-radius: 8px;
+      color: inherit;
+    }
+
+    .muted {
+      color: var(--muted)
+    }
+
+    .right {
+      text-align: right
+    }
+
+    #editModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    #editModal .modal-content {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 12px;
+      width: 420px;
+      position: relative;
+    }
+
+    #editModal button.closeModal {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <div class="header">
+      <h2>Ingredientes</h2>
+
+      <!-- 🔧 NOVO — Botões lado a lado -->
+      <div style="display:flex; gap:12px; align-items:center;">
+        <a class="muted back-link" href="main.html">← Voltar ao Dashboard</a>
+        <button id="addBtn" class="btn">+ Adicionar Ingrediente</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Quantidade</th>
+            <th>Unidade</th>
+            <th class="right">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="ingredientesList">
+          <tr>
+            <td colspan="4" class="muted">A carregar...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="editModal">
+    <div class="modal-content">
+      <button class="closeModal">&times;</button>
+      <h3 id="modalTitle">Editar Ingrediente</h3>
+
+      <input type="text" id="nomeInput" placeholder="Nome" style="width:100%;margin-top:10px;">
+      <input type="number" id="quantidadeInput" placeholder="Quantidade" style="width:100%;margin-top:10px;">
+      <select id="unidadeInput" style="width:100%;margin-top:10px;">
+        <option value="kg">kg</option>
+        <option value="g">g</option>
+        <option value="L">L</option>
+        <option value="ml">ml</option>
+        <option value="un">un</option>
+      </select>
+
+      <button id="saveBtn" class="btn" style="margin-top:15px;width:100%;">Guardar</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore, collection, addDoc, updateDoc, deleteDoc,
+      doc, onSnapshot
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBtM5iTgEJu3DW5H3QNOCH327Xv9Bmvyk4",
+      authDomain: "gestaodb-c7440.firebaseapp.com",
+      projectId: "gestaodb-c7440",
+      storageBucket: "gestaodb-c7440.firebasestorage.app",
+      messagingSenderId: "600106455001",
+      appId: "1:600106455001:web:407542f3c2fd18d3c6d3c8",
+      measurementId: "G-XQVMLE8XCN"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getFirestore(app);
+
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      iniciarIngredientes();
+    });
+
+    function iniciarIngredientes() {
+      const ingredientesList = document.getElementById("ingredientesList");
+      const editModal = document.getElementById("editModal");
+      const nomeInput = document.getElementById("nomeInput");
+      const quantidadeInput = document.getElementById("quantidadeInput");
+      const unidadeInput = document.getElementById("unidadeInput");
+      const saveBtn = document.getElementById("saveBtn");
+
+      let editingId = null;
+
+      onSnapshot(collection(db, "ingredientes"), snapshot => {
+        ingredientesList.innerHTML = "";
+
+        if (snapshot.empty) {
+          ingredientesList.innerHTML = `<tr><td colspan="4" class="muted">Nenhum ingrediente registado.</td></tr>`;
+          return;
+        }
+
+        snapshot.forEach(docSnap => {
+          const d = docSnap.data();
+
+          ingredientesList.innerHTML += `
+            <tr>
+              <td>${d.nome}</td>
+              <td>${d.quantidade}</td>
+              <td>${d.unidade}</td>
+              <td class="right">
+                <button class="ghost" onclick="editIng('${docSnap.id}','${d.nome}','${d.quantidade}','${d.unidade}')">Editar</button>
+                <button class="ghost danger" onclick="deleteIng('${docSnap.id}')">Eliminar</button>
+              </td>
+            </tr>
+          `;
+        });
+      });
+
+      document.getElementById("addBtn").addEventListener("click", () => {
+        editingId = null;
+        nomeInput.value = "";
+        quantidadeInput.value = "";
+        unidadeInput.value = "un";
+        editModal.style.display = "flex";
+      });
+
+      document.querySelector(".closeModal").addEventListener("click", () => {
+        editModal.style.display = "none";
+      });
+
+      window.editIng = (id, nome, quantidade, unidade) => {
+        editingId = id;
+        nomeInput.value = nome;
+        quantidadeInput.value = quantidade;
+        unidadeInput.value = unidade;
+        editModal.style.display = "flex";
+      };
+
+      saveBtn.addEventListener("click", async () => {
+        const nome = nomeInput.value.trim();
+        const quantidade = quantidadeInput.value.trim();
+        const unidade = unidadeInput.value;
+
+        if (!nome || !quantidade) {
+          alert("Preenche todos os campos.");
+          return;
+        }
+
+        try {
+          if (editingId) {
+            await updateDoc(doc(db, "ingredientes", editingId), {
+              nome, quantidade, unidade
+            });
+          } else {
+            await addDoc(collection(db, "ingredientes"), {
+              nome, quantidade, unidade
+            });
+          }
+
+          editModal.style.display = "none";
+        } catch (e) {
+          console.error(e);
+          alert("Erro ao guardar.");
+        }
+      });
+
+      window.deleteIng = async id => {
+        if (!confirm("Eliminar ingrediente?")) return;
+        await deleteDoc(doc(db, "ingredientes", id));
+      };
+    }
+  </script>
+</body>
+
+</html>
+

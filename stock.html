@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="pt">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Finded — Stock</title>
+  <link rel="icon" type="image/x-icon" href="../images/Finded_Logobg.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/ui-fixes.css">
+  <style>
+    :root {
+      --bg: #071023;
+      --card: #0f1724;
+      --muted: #9aa4b2;
+      --accent: #6ee7b7;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: linear-gradient(180deg, #071023 0%, #081426 100%);
+      color: #e6eef6;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 28px auto;
+      padding: 18px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      background: linear-gradient(90deg, var(--accent), #5eead4);
+      border: none;
+      color: #032018;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .ghost {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 8px;
+      border-radius: 8px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .card {
+      background: var(--card);
+      padding: 16px;
+      border-radius: 12px;
+      margin-top: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      color: #e6eef6
+    }
+
+    thead th {
+      text-align: left;
+      padding: 10px;
+      color: var(--muted);
+      font-size: 13px
+    }
+
+    tbody td {
+      padding: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.02)
+    }
+
+    input,
+    select {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 8px;
+      border-radius: 8px;
+      color: inherit
+    }
+
+    .muted {
+      color: var(--muted)
+    }
+
+    .small {
+      font-size: 13px
+    }
+
+    .right {
+      text-align: right
+    }
+
+    .errorRow {
+      color: #ffb4b4;
+      padding: 12px 
+    }
+
+    #editModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      align-items: center;
+      justify-content: center;
+      z-index: 9999
+    }
+
+    #editModal .modal-content {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 12px;
+      width: 420px;
+      position: relative
+    }
+
+    #editModal button.closeModal {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 20px;
+      cursor: pointer
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center
+    }
+
+    .search {
+      margin-left: 8px;
+      flex: 1
+    }
+
+    .small-muted {
+      font-size: 13px;
+      color: var(--muted)
+    }
+
+    .header a.muted {
+      text-decoration: none;
+      border-bottom: none;
+      box-shadow: none;
+    }
+
+    .header a.muted:hover {
+      text-decoration: none;
+      color: #c7d2df;
+    }
+
+    #orderSelect,
+    #orderSelect option {
+      background: #0f1724 !important;
+      background-color: #0f1724 !important;
+      color: #e6eef6 !important;
+    }
+
+    #orderSelect option:checked,
+    #orderSelect option:hover,
+    #orderSelect option:focus {
+      background: #2563eb !important;
+      background-color: #2563eb !important;
+      color: #ffffff !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div>
+        <h1 style="margin:0">Stock — Finded</h1>
+        <div class="muted">Gerir produtos em stock</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <a class="muted back-link" href="main.html">← Voltar ao Dashboard</a>
+        <button class="btn" id="logoutBtn">Sair</button>
+      </div>
+    </div>
+
+
+    <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+      <input id="stockNumero" placeholder="Nº (ex: FD-001)" style="min-width:140px" />
+      <input id="stockProduto" placeholder="Produto" style="min-width:260px" />
+      <input id="stockPreco" type="number" step="0.01" placeholder="Preço" style="width:120px" />
+      <input id="stockQuantidade" type="number" placeholder="Qtd" style="width:100px" />
+      <button class="btn" id="addStockBtn">Adicionar</button>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
+      <div class="toolbar">
+        <div class="muted small">Pesquisar:</div>
+        <input id="searchInput" class="search" placeholder="Pesquisar por produto" />
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="muted small">Ordenar por</div>
+        <select id="orderSelect">
+          <option value="produto">Produto</option>
+          <option value="createdAt-desc">Criado (recente)</option>
+          <option value="quantidade-desc">Quantidade (desc)</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;overflow:auto">
+      <table aria-describedby="stock-list">
+        <thead>
+          <tr>
+            <th>Nº</th>
+            <th>Produto</th>
+            <th>Preço</th>
+            <th>Qtd</th>
+            <th class="right">Criado</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="stockTbody"></tbody>
+      </table>
+    </div>
+    </section>
+
+    <footer style="margin-top:18px;color:var(--muted);font-size:13px">Finded © <span id="year"></span></footer>
+  </div>
+
+  <div id="editModal">
+    <div class="modal-content">
+      <button class="closeModal" id="closeEdit">&times;</button>
+      <h3 style="margin-top:0">Editar Produto</h3>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <input id="editNumero" placeholder="Ref" />
+        <input id="editProduto" placeholder="Produto" />
+        <input id="editPreco" type="number" step="0.01" placeholder="Preço" />
+        <input id="editQuantidade" type="number" placeholder="Quantidade" />
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+          <button class="ghost" id="cancelEdit">Cancelar</button>
+          <button class="btn" id="saveEdit">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "../js/firebase.js";
+    import {
+      collection,
+      addDoc,
+      query,
+      orderBy,
+      onSnapshot,
+      where,
+      getDocs,
+      doc,
+      updateDoc,
+      deleteDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+    const stockTbody = document.getElementById('stockTbody');
+    const stockNumero = document.getElementById('stockNumero');
+    const stockProduto = document.getElementById('stockProduto');
+    const stockPreco = document.getElementById('stockPreco');
+    const stockQuantidade = document.getElementById('stockQuantidade');
+    const addStockBtn = document.getElementById('addStockBtn');
+    const searchInput = document.getElementById('searchInput');
+    const orderSelect = document.getElementById('orderSelect');
+    const yearEl = document.getElementById('year');
+    yearEl.textContent = new Date().getFullYear();
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    const editModal = document.getElementById('editModal');
+    const closeEdit = document.getElementById('closeEdit');
+    const cancelEdit = document.getElementById('cancelEdit');
+    const saveEdit = document.getElementById('saveEdit');
+    const editNumero = document.getElementById('editNumero');
+    const editProduto = document.getElementById('editProduto');
+    const editPreco = document.getElementById('editPreco');
+    const editQuantidade = document.getElementById('editQuantidade');
+
+    let currentUser = null;
+    let unsubscribe = null;
+    let stockCache = [];
+
+    function ensureDb() {
+      if (!db || typeof db !== 'object') {
+        stockTbody.innerHTML = '<tr><td colspan="6" class="errorRow">Erro: Firestore não inicializado.</td></tr>';
+        return false;
+      }
+      return true;
+    }
+
+    function startRealtimeListener(orderByField = 'produto', desc = false) {
+      if (!ensureDb()) return;
+      if (typeof unsubscribe === 'function') unsubscribe();
+
+      const stockCol = collection(db, 'stock');
+      let q;
+      if (orderByField === 'createdAt') {
+        q = query(stockCol, orderBy('createdAt', desc ? 'desc' : 'asc'));
+      } else if (orderByField === 'quantidade') {
+        q = query(stockCol, orderBy('quantidade', desc ? 'desc' : 'asc'));
+      } else {
+        q = query(stockCol, orderBy('produto', desc ? 'desc' : 'asc'));
+      }
+
+      unsubscribe = onSnapshot(q, (querySnapshot) => {
+        stockCache = [];
+        querySnapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          stockCache.push({ id: docSnap.id, ...data });
+        });
+        renderTable(stockCache);
+      }, err => {
+        console.error('Erro no listener stock:', err);
+        stockTbody.innerHTML = '<tr><td colspan="6" class="errorRow">Erro ao carregar stock</td></tr>';
+      });
+    }
+
+    function renderTable(arr) {
+      const q = (searchInput.value || '').trim().toLowerCase();
+      const filtered = q ? arr.filter(item => {
+        return (item.produto && item.produto.toLowerCase().includes(q)) ||
+          (item.numero && item.numero.toLowerCase().includes(q));
+      }) : arr;
+
+      stockTbody.innerHTML = '';
+      if (filtered.length === 0) {
+        stockTbody.innerHTML = '<tr><td colspan="6" class="muted">Nenhum produto encontrado.</td></tr>';
+        return;
+      }
+
+      filtered.forEach(item => {
+        const createdAt = item.createdAt && item.createdAt.toDate ? item.createdAt.toDate().toLocaleString() : '-';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(item.numero || '')}</td>
+          <td>${escapeHtml(item.produto || '')}</td>
+          <td>€${Number(item.preco || 0).toFixed(2)}</td>
+          <td>${Number(item.quantidade || 0)}</td>
+          <td class="right">${escapeHtml(createdAt)}</td>
+          <td>
+            <button class="ghost edit" data-id="${item.id}">Editar</button>
+            <button class="ghost delete" data-id="${item.id}" style="margin-left:6px;background:#f87171;color:#fff">Eliminar</button>
+          </td>
+        `;
+        stockTbody.appendChild(tr);
+      });
+    }
+
+    addStockBtn.addEventListener('click', async () => {
+      if (!ensureDb()) return;
+      const numero = (stockNumero.value || '').trim();
+      const produto = (stockProduto.value || '').trim();
+      const preco = parseFloat(stockPreco.value);
+      const quantidade = parseInt(stockQuantidade.value, 10);
+
+      if (!produto) { alert('Especifica o nome do produto'); return; }
+      if (Number.isNaN(preco)) { alert('Preenche um preço válido'); return; }
+      if (Number.isNaN(quantidade)) { alert('Preenche a quantidade em stock'); return; }
+
+      addStockBtn.disabled = true;
+      addStockBtn.textContent = 'A adicionar...';
+
+      try {
+        const payload = {
+          numero: numero || `P-${Date.now()}`,
+          produto,
+          preco,
+          quantidade,
+          createdAt: serverTimestamp(),
+          createdBy: currentUser ? currentUser.uid : null
+        };
+        const colRef = collection(db, 'stock');
+        await addDoc(colRef, payload);
+
+        stockNumero.value = '';
+        stockProduto.value = '';
+        stockPreco.value = '';
+        stockQuantidade.value = '';
+
+      } catch (err) {
+        console.error('Erro ao adicionar produto:', err);
+        alert('Erro ao adicionar produto — vê a consola');
+      } finally {
+        addStockBtn.disabled = false;
+        addStockBtn.textContent = 'Adicionar';
+      }
+    });
+
+    stockTbody.addEventListener('click', async (e) => {
+      const target = e.target;
+      if (target.classList.contains('edit')) {
+        const id = target.dataset.id;
+        openEditModal(id);
+      }
+      if (target.classList.contains('delete')) {
+        const id = target.dataset.id;
+        if (confirm('Tem a certeza que quer eliminar este produto?')) {
+          try {
+            await deleteDoc(doc(db, 'stock', id));
+          } catch (err) {
+            console.error('Erro a eliminar produto:', err);
+            alert('Erro ao eliminar produto — vê a consola');
+          }
+        }
+      }
+    });
+
+    let editingId = null;
+    function openEditModal(id) {
+      const item = stockCache.find(s => s.id === id);
+      if (!item) { alert('Produto não encontrado'); return; }
+      editingId = id;
+      editNumero.value = item.numero || '';
+      editProduto.value = item.produto || '';
+      editPreco.value = (typeof item.preco === 'number') ? item.preco : (item.preco || '');
+      editQuantidade.value = (typeof item.quantidade === 'number') ? item.quantidade : (item.quantidade || '');
+      editModal.style.display = 'flex';
+    }
+
+    closeEdit.addEventListener('click', () => editModal.style.display = 'none');
+    cancelEdit.addEventListener('click', () => editModal.style.display = 'none');
+
+    saveEdit.addEventListener('click', async () => {
+      if (!editingId) return;
+      const numero = (editNumero.value || '').trim();
+      const produto = (editProduto.value || '').trim();
+      const preco = parseFloat(editPreco.value);
+      const quantidade = parseInt(editQuantidade.value, 10);
+
+      if (!produto) { alert('Especifica o nome do produto'); return; }
+      if (Number.isNaN(preco)) { alert('Preenche um preço válido'); return; }
+      if (Number.isNaN(quantidade)) { alert('Preenche a quantidade'); return; }
+
+      try {
+        const docRef = doc(db, 'stock', editingId);
+        await updateDoc(docRef, {
+          numero: numero || undefined,
+          produto,
+          preco,
+          quantidade,
+          updatedAt: serverTimestamp()
+        });
+        editModal.style.display = 'none';
+        editingId = null;
+      } catch (err) {
+        console.error('Erro ao actualizar produto:', err);
+        alert('Erro ao actualizar produto — vê a consola');
+      }
+    });
+
+    searchInput.addEventListener('input', () => renderTable(stockCache));
+    orderSelect.addEventListener('change', () => {
+      const val = orderSelect.value;
+      if (val === 'produto') startRealtimeListener('produto', false);
+      else if (val === 'createdAt-desc') startRealtimeListener('createdAt', true);
+      else if (val === 'quantidade-desc') startRealtimeListener('quantidade', true);
+      else startRealtimeListener('produto', false);
+    });
+
+    onAuthStateChanged(auth, user => {
+      if (!user) { window.location.href = 'login.html'; return; }
+      currentUser = user;
+      startRealtimeListener('produto', false);
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      signOut(auth).then(() => { window.location.href = 'login.html'; }).catch(console.error);
+    });
+
+    function escapeHtml(s) {
+      if (s === null || s === undefined) return '';
+      return String(s).replace(/[&<>"']/g, m =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+    }
+  </script>
+</body>
+
+</html>
+

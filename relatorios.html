@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="pt">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Relatórios — Finded</title>
+  <link rel="icon" type="image/x-icon" href="../images/Finded_Logobg.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/ui-fixes.css">
+  <style>
+    :root {
+      --bg: #0f1724;
+      --card: #0b1220;
+      --muted: #9aa4b2;
+      --accent: #6ee7b7;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: #e6eef6;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    h1 {
+      margin-bottom: 12px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--card), rgba(255, 255, 255, 0.02));
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6);
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      background: linear-gradient(90deg, var(--accent), #5eead4);
+      border: none;
+      color: #032018;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .ghost {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 8px 10px;
+      border-radius: 8px;
+      color: var(--muted);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 12px 8px;
+      vertical-align: middle;
+    }
+
+    th {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--accent);
+    }
+
+    td {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: #e6eef6;
+    }
+
+    .muted {
+      color: var(--muted)
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px 0;
+      color: var(--muted)
+    }
+
+    .right {
+      text-align: right
+    }
+
+    .summary {
+      margin-top: 12px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      align-items: center;
+      color: var(--muted);
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        color: #000;
+        padding: 0;
+      }
+
+      .card {
+        box-shadow: none;
+        border-radius: 0;
+        background: transparent;
+        padding: 0;
+        max-width: 100%;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+      table th {
+        color: #000;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="card">
+    <div class="toolbar no-print">
+      <div class="toolbar-left">
+        <div>
+          <h1 style="margin:0">Relatórios — Finded</h1>
+        </div>
+      </div>
+
+      <!-- Botões à direita: Voltar + Atualizar + Imprimir -->
+      <div style="display:flex;gap:8px;align-items:center">
+        <!-- volta para o dashboard (colocado à direita) -->
+        <a href="main.html" class="ghost no-print back-link" aria-label="Voltar ao Dashboard">← Voltar ao Dashboard</a>
+
+        <button id="refreshBtn" class="btn no-print">Atualizar</button>
+        <button id="printBtn" class="btn no-print">Gerar PDF / Imprimir</button>
+      </div>
+    </div>
+
+    <div id="loading" class="loading">Carregando relatórios...</div>
+
+    <table id="reportsTable" style="display:none;">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Fatura</th>
+          <th>Produto</th>
+          <th>Quantidade</th>
+          <th>Preço</th>
+          <th class="right">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody id="reportsBody"></tbody>
+    </table>
+
+    <div id="summary" class="summary" style="display:none;">
+      <div>Total linhas: <strong id="totalLines">0</strong></div>
+      <div>Total facturado: <strong id="totalAmount">€0.00</strong></div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { db, auth } from "../js/firebase.js";
+    import { collection, getDocs, query, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+    const loading = document.getElementById('loading');
+    const table = document.getElementById('reportsTable');
+    const tbody = document.getElementById('reportsBody');
+    const summaryEl = document.getElementById('summary');
+    const totalLinesEl = document.getElementById('totalLines');
+    const totalAmountEl = document.getElementById('totalAmount');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const printBtn = document.getElementById('printBtn');
+
+    // Escapa HTML (segurança básica)
+    function escapeHtml(s) {
+      if (s === null || s === undefined) return '';
+      return String(s).replace(/[&<>"']/g, m =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+    }
+
+    // Converte qualquer tipo de timestamp em string legível com data e hora (DD/MM/YYYY HH:MM:SS)
+    // Converte qualquer tipo de timestamp em string legível com data e hora (DD/MM/YYYY HH:MM:SS)
+    function tsToDateString(ts) {
+      try {
+        if (!ts) return '-';
+
+        // formata Date para "DD/MM/YYYY HH:MM:SS" (hora local)
+        const formatDate = (d) => {
+          const pad = n => String(n).padStart(2, '0');
+          return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+        };
+
+        // Caso 1: Firestore Timestamp com método toDate()
+        if (typeof ts.toDate === 'function') {
+          return formatDate(ts.toDate());
+        }
+
+        // Caso 2: objeto com seconds / nanoseconds (forma raw do Firestore)
+        if (typeof ts.seconds === 'number') {
+          const ms = (Number(ts.seconds) * 1000) + Math.floor((Number(ts.nanoseconds) || 0) / 1e6);
+          const d = new Date(ms);
+          if (!isNaN(d)) return formatDate(d);
+        }
+
+        // Caso 3: um número (pode ser segundos ou milissegundos)
+        if (typeof ts === 'number') {
+          // heurística: se for < 1e12 tratamos como segundos, senão já é ms
+          const ms = ts < 1e12 ? ts * 1000 : ts;
+          const d = new Date(ms);
+          if (!isNaN(d)) return formatDate(d);
+        }
+
+        // Caso 4: string / outro - tenta parse
+        if (typeof ts === 'string') {
+          const d = new Date(ts);
+          if (!isNaN(d)) return formatDate(d);
+        }
+
+        // fallback: usar Timestamp.now()
+        return formatDate((typeof Timestamp !== 'undefined' && typeof Timestamp.now === 'function') ? Timestamp.now().toDate() : new Date());
+      } catch (e) {
+        console.error('Erro ao formatar data:', e);
+        try { return String(ts); } catch { return '-'; }
+      }
+    }
+
+
+    // Carrega relatórios da coleção 'faturacao'
+    async function loadReports() {
+      loading.style.display = 'block';
+      table.style.display = 'none';
+      summaryEl.style.display = 'none';
+      tbody.innerHTML = '';
+
+      try {
+        const col = collection(db, 'faturacao');
+        const q = query(col, orderBy('createdAt', 'desc'));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          loading.textContent = 'Nenhuma fatura encontrada.';
+          return;
+        }
+
+        let totalLines = 0;
+        let totalAmount = 0;
+
+        snapshot.forEach(docSnap => {
+          const raw = docSnap.data() || {};
+          const numero = raw.numero || docSnap.id;
+
+          // usa a data da fatura, ou createdAt, ou data atual
+          const ts = raw.data || raw.createdAt || Timestamp.now();
+          const dateStr = tsToDateString(ts);
+
+          const lines = Array.isArray(raw.lines) ? raw.lines : [];
+
+          if (lines.length === 0) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${escapeHtml(dateStr)}</td>
+              <td>${escapeHtml(numero)}</td>
+              <td class="muted">-- sem linhas --</td>
+              <td class="muted">-</td>
+              <td class="muted">-</td>
+              <td class="right muted">-</td>
+            `;
+            tbody.appendChild(tr);
+          } else {
+            lines.forEach(line => {
+              const produto = line.name || line.produto || line.product || '-';
+              const qty = Number(line.qty || line.quantidade || 0);
+              const price = Number(line.price || line.preco || line.unitPrice || 0);
+              const subtotal = qty * price;
+              totalLines += 1;
+              totalAmount += subtotal;
+
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td>${escapeHtml(dateStr)}</td>
+                <td>${escapeHtml(numero)}</td>
+                <td>${escapeHtml(produto)}</td>
+                <td>${escapeHtml(String(qty))}</td>
+                <td>€${price.toFixed(2)}</td>
+                <td class="right">€${subtotal.toFixed(2)}</td>
+              `;
+              tbody.appendChild(tr);
+            });
+          }
+        });
+
+        totalLinesEl.textContent = String(totalLines);
+        totalAmountEl.textContent = `€${totalAmount.toFixed(2)}`;
+        loading.style.display = 'none';
+        table.style.display = 'table';
+        summaryEl.style.display = 'flex';
+      } catch (err) {
+        console.error('Erro ao carregar relatórios:', err);
+        loading.textContent = 'Erro ao carregar relatórios: ' + (err && err.message ? err.message : String(err));
+      }
+    }
+
+    // Gera página imprimível
+    function generatePrintable() {
+      const headerHtml = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+          <div>
+            <h2 style="margin:0">Relatórios — Finded</h2>
+            <div style="color:#666">${new Date().toLocaleString('pt-PT')}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-weight:700">Total linhas: ${escapeHtml(totalLinesEl.textContent)}</div>
+            <div style="font-weight:700">Total: ${escapeHtml(totalAmountEl.textContent)}</div>
+          </div>
+        </div>
+      `;
+
+      const rows = Array.from(tbody.querySelectorAll('tr')).map(tr => {
+        const cells = Array.from(tr.children).map(td => td.textContent || '');
+        return `<tr>${cells.map((c, i) =>
+          `<td style="padding:8px;border:1px solid #ddd;text-align:${i >= 4 ? 'right' : i === 3 ? 'center' : 'left'}">${escapeHtml(c)}</td>`
+        ).join('')}</tr>`;
+      }).join('');
+
+      const printable = `
+<!doctype html><html><head><meta charset="utf-8"><title>Relatórios — Finded</title>
+<style>
+body{font-family:Arial,Helvetica,sans-serif;color:#000;padding:24px;}
+table{width:100%;border-collapse:collapse;margin-top:12px;}
+th,td{padding:8px;border:1px solid #ddd;}
+th{text-align:left;background:#eee;}
+</style></head><body>
+${headerHtml}
+<table>
+<thead><tr><th>Data</th><th>Fatura</th><th>Produto</th><th>Quantidade</th><th>Preço</th><th>Subtotal</th></tr></thead>
+<tbody>${rows}</tbody></table>
+<script>window.onload=()=>window.print();</html>`;
+
+      const w = window.open('', '_blank', 'width=400, height=600');
+      if (!w) { alert('Pop-up bloqueado. Permite pop-ups para este site.'); return; }
+      w.document.open();
+      w.document.write(printable);
+      w.document.close();
+      w.onload = () => {try {w.print();} catch (e){} };
+    }
+
+    refreshBtn.addEventListener('click', loadReports);
+    printBtn.addEventListener('click', generatePrintable);
+
+    onAuthStateChanged(auth, user => {
+      if (!user) window.location.href = 'login.html';
+      else loadReports();
+    });
+  </script>
+</body>
+
+</html>
+

@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="pt">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Finded — Mesas</title>
+    <link rel="icon" type="image/x-icon" href="../images/Finded_Logobg.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/ui-fixes.css">
+    <style>
+        :root {
+            --bg: #071023;
+            --card: #0f1724;
+            --muted: #9aa4b2;
+            --accent: #6ee7b7;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+            background: linear-gradient(180deg, #071023 0%, #081426 100%);
+            color: #e6eef6;
+        }
+
+        .wrap {
+            max-width: 1100px;
+            margin: 28px auto;
+            padding: 18px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .btn {
+            background: linear-gradient(90deg, var(--accent), #5eead4);
+            border: none;
+            color: #032018;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .ghost {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 8px;
+            border-radius: 8px;
+            color: var(--muted);
+            cursor: pointer;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 16px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .table-card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
+            padding: 14px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 90px;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .table-card h4 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .table-state {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        #newTableRow {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 12px;
+        }
+
+        input,
+        select {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 8px;
+            border-radius: 8px;
+            color: inherit;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        /* Modal */
+        #tableModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        #tableModal .modal-content {
+            width: 920px;
+            max-width: 95%;
+            background: var(--card);
+            padding: 18px;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        #tableModal .closeBtn {
+            position: absolute;
+            right: 12px;
+            top: 12px;
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 12px;
+        }
+
+        .products-list {
+            max-height: 420px;
+            overflow: auto;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .product-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .cart {
+            max-height: 420px;
+            overflow: auto;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .cart-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            align-items: center;
+            padding: 6px;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.02);
+        }
+
+        .muted-small {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        @media(max-width:920px) {
+            .modal-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="header">
+            <div>
+                <h1 style="margin:0">Mesas — Finded</h1>
+                <div class="muted">Gestão de mesas e consumos (integrado com POS)</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+                <a class="muted back-link" href="main.html">← Voltar ao Dashboard</a>
+                <button class="btn" id="newTableBtn">Nova Mesa</button>
+                <button class="ghost" id="logoutBtn">Sair</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <div class="muted-small">Mesas ativas</div>
+                <div class="muted-small">Clique numa mesa para abrir e gerir consumos</div>
+            </div>
+
+            <div class="grid" id="tablesGrid" aria-live="polite">
+            </div>
+
+            <div id="newTableRow">
+                <input id="newTableName" placeholder="Nome da mesa (ex: Mesa 1)" style="flex:1" />
+                <button class="btn" id="createTableBtn">Criar Mesa</button>
+            </div>
+        </div>
+
+        <footer style="margin-top:18px;color:var(--muted);font-size:13px">Finded © <span id="year"></span></footer>
+    </div>
+
+    <div id="tableModal" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="modal-content">
+            <button class="closeBtn" id="closeTableModal">&times;</button>
+            <h2 id="modalTableName">Mesa</h2>
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
+                <div class="muted-small">Estado: <span id="modalTableState"></span></div>
+                <div class="muted-small">Última actualização: <span id="modalUpdatedAt"></span></div>
+                <div style="margin-left:auto">
+                    <button class="ghost" id="renameTableBtn">Renomear</button>
+                    <button class="ghost" id="deleteTableBtn"
+                        style="margin-left:6px;background:#f87171;color:#fff">Eliminar</button>
+                </div>
+            </div>
+
+            <div class="modal-grid">
+                <div>
+                    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+                        <select id="selectProductSource" style="width:220px">
+                            <option value="stock">Produtos (stock)</option>
+                        </select>
+                        <input id="filterProducts" placeholder="Procurar produto..." style="flex:1" />
+                        <button class="btn" id="refreshProductsBtn">Atualizar</button>
+                    </div>
+
+                    <div class="products-list" id="productsList" aria-live="polite">
+                    </div>
+                </div>
+
+                <div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                        <strong>Consumo</strong>
+                        <div class="muted-small">Items: <span id="modalItemsCount">0</span></div>
+                    </div>
+
+                    <div class="cart" id="cartList">
+                    </div>
+
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+                        <div class="muted-small">Total:</div>
+                        <div id="modalTotal" style="font-weight:800">€0.00</div>
+                    </div>
+
+                    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+                        <button class="ghost" id="saveTableBtn">Guardar Mesa</button>
+                        <button class="btn" id="sendToPOSBtn">Enviar para POS</button>
+                        <button class="ghost" id="clearTableBtn">Limpar Mesa</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db } from '../js/firebase.js';
+        import {
+            collection, doc, addDoc, setDoc, getDocs, onSnapshot, query, where, orderBy,
+            updateDoc, deleteDoc, serverTimestamp, getDoc, Timestamp
+        } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+        const tablesGrid = document.getElementById('tablesGrid');
+        const newTableName = document.getElementById('newTableName');
+        const createTableBtn = document.getElementById('createTableBtn');
+        const newTableBtn = document.getElementById('newTableBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const yearEl = document.getElementById('year');
+        yearEl.textContent = new Date().getFullYear();
+        const tableModal = document.getElementById('tableModal');
+        const closeTableModal = document.getElementById('closeTableModal');
+        const modalTableName = document.getElementById('modalTableName');
+        const modalTableState = document.getElementById('modalTableState');
+        const modalUpdatedAt = document.getElementById('modalUpdatedAt');
+        const selectProductSource = document.getElementById('selectProductSource');
+        const filterProducts = document.getElementById('filterProducts');
+        const refreshProductsBtn = document.getElementById('refreshProductsBtn');
+        const productsList = document.getElementById('productsList');
+        const cartList = document.getElementById('cartList');
+        const modalTotal = document.getElementById('modalTotal');
+        const modalItemsCount = document.getElementById('modalItemsCount');
+        const saveTableBtn = document.getElementById('saveTableBtn');
+        const sendToPOSBtn = document.getElementById('sendToPOSBtn');
+        const clearTableBtn = document.getElementById('clearTableBtn');
+        const renameTableBtn = document.getElementById('renameTableBtn');
+        const deleteTableBtn = document.getElementById('deleteTableBtn');
+
+        let currentUser = null;
+        let mesasCache = []; 
+        let currentMesa = null; 
+        let productsCache = []; 
+        let cart = []; 
+
+        function escapeHtml(s) {
+            if (s === null || s === undefined) return '';
+            return String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+        }
+        function safeNum(v) { return Number(v || 0); }
+        function formatCurrency(v) { return '€' + safeNum(v).toFixed(2); }
+
+        function ensureDb() {
+            if (!db || typeof db !== 'object') {
+                tablesGrid.innerHTML = '<div class="muted">Erro: Firestore não inicializado.</div>';
+                return false;
+            }
+            return true;
+        }
+
+        onAuthStateChanged(auth, user => {
+            if (!user) { window.location.href = 'login.html'; return; }
+            currentUser = user;
+            startMesasListener();
+        });
+
+        let unsubscribeMesas = null;
+        function startMesasListener() {
+            if (!ensureDb()) return;
+            if (typeof unsubscribeMesas === 'function') unsubscribeMesas();
+
+            const col = collection(db, 'mesas');
+            const q = query(col, orderBy('createdAt', 'asc'));
+            unsubscribeMesas = onSnapshot(q, snap => {
+                mesasCache = [];
+                snap.forEach(d => mesasCache.push({ id: d.id, ...d.data() }));
+                renderMesas();
+            }, err => {
+                console.error('Erro ao ouvir mesas:', err);
+                tablesGrid.innerHTML = '<div class="muted">Erro ao carregar mesas.</div>';
+            });
+        }
+
+        function renderMesas() {
+            tablesGrid.innerHTML = '';
+            if (!mesasCache || mesasCache.length === 0) {
+                tablesGrid.innerHTML = '<div class="muted">Nenhuma mesa criada. Cria uma nova mesa abaixo.</div>';
+                return;
+            }
+
+            mesasCache.forEach(m => {
+                const div = document.createElement('div');
+                div.className = 'table-card';
+                const estado = m.estado || (m.cart && m.cart.length ? 'ocupada' : 'livre');
+                const stateText = estado === 'livre' ? 'Livre' : (estado === 'ocupada' ? 'Ocupada' : (estado === 'pagamento' ? 'Aguardando Pagamento' : estado));
+                const total = safeNum(m.total || (m.cart || []).reduce((s, it) => s + (safeNum(it.qty) * safeNum(it.price)), 0));
+                const updated = m.updatedAt && m.updatedAt.toDate ? m.updatedAt.toDate().toLocaleString() : '-';
+
+                div.innerHTML = `
+        <h4>${escapeHtml(m.nome || m.name || 'Mesa')}</h4>
+        <div class="table-state">${escapeHtml(String(m.descricao || ''))}</div>
+        <div class="muted-small">Estado: ${stateText}</div>
+        <div class="muted-small">Última: ${escapeHtml(updated)}</div>
+        <div style="font-weight:800;margin-top:6px">${formatCurrency(total)}</div>
+        <div class="table-actions">
+          <button class="ghost openTableBtn" data-id="${m.id}">Abrir</button>
+          <button class="ghost" style="margin-left:6px" data-id="${m.id}" data-action="quickClear">Limpar</button>
+        </div>
+      `;
+                tablesGrid.appendChild(div);
+            });
+
+            tablesGrid.querySelectorAll('.openTableBtn').forEach(btn => {
+                btn.addEventListener('click', () => openMesaModal(btn.dataset.id));
+            });
+            tablesGrid.querySelectorAll('[data-action="quickClear"]').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.dataset.id;
+                    if (!confirm('Limpar consumo desta mesa agora?')) return;
+                    try {
+                        await updateDoc(doc(db, 'mesas', id), { cart: [], total: 0, estado: 'livre', updatedAt: serverTimestamp() });
+                        alert('Mesa limpa.');
+                    } catch (err) {
+                        console.error(err);
+                        alert('Erro ao limpar mesa — ver consola');
+                    }
+                });
+            });
+        }
+
+        createTableBtn.addEventListener('click', async () => {
+            if (!ensureDb()) return;
+            const nome = (newTableName.value || '').trim();
+            if (!nome) { alert('Escolhe um nome para a mesa'); return; }
+            createTableBtn.disabled = true;
+            createTableBtn.textContent = 'A criar...';
+            try {
+                const payload = { nome, descricao: '', estado: 'livre', cart: [], total: 0, createdAt: serverTimestamp(), createdBy: currentUser ? currentUser.uid : null, updatedAt: serverTimestamp() };
+                await addDoc(collection(db, 'mesas'), payload);
+                newTableName.value = '';
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao criar mesa — ver consola');
+            } finally {
+                createTableBtn.disabled = false;
+                createTableBtn.textContent = 'Criar Mesa';
+            }
+        });
+
+        newTableBtn.addEventListener('click', () => {
+            const defaultName = `Mesa ${(mesasCache.length || 0) + 1}`;
+            newTableName.value = defaultName;
+            newTableName.focus();
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth).then(() => window.location.href = 'login.html').catch(console.error);
+        });
+
+        async function openMesaModal(mesaId) {
+            if (!ensureDb()) return;
+            try {
+                const docRef = doc(db, 'mesas', mesaId);
+                const d = await getDoc(docRef);
+                if (!d.exists()) { alert('Mesa não encontrada'); return; }
+                currentMesa = { id: d.id, ...d.data() };
+                cart = (currentMesa.cart || []).map(it => ({ ...it })); 
+                modalTableName.textContent = currentMesa.nome || currentMesa.name || 'Mesa';
+                modalTableState.textContent = currentMesa.estado || (cart.length ? 'ocupada' : 'livre');
+                modalUpdatedAt.textContent = currentMesa.updatedAt && currentMesa.updatedAt.toDate ? currentMesa.updatedAt.toDate().toLocaleString() : '-';
+                renderCart();
+                await loadProducts();
+                renderProductsList();
+                tableModal.style.display = 'flex';
+                tableModal.setAttribute('aria-hidden', 'false');
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao abrir mesa — ver consola');
+            }
+        }
+
+        closeTableModal.addEventListener('click', () => { tableModal.style.display = 'none'; tableModal.setAttribute('aria-hidden', 'true'); });
+
+        async function loadProducts() {
+            if (!ensureDb()) return;
+            productsList.innerHTML = '<div class="muted-small">A carregar produtos...</div>';
+            productsCache = [];
+            const source = selectProductSource.value === 'cardapio' ? 'cardapio' : 'stock';
+            try {
+                const colRef = collection(db, source);
+                const q = query(colRef, orderBy('produto'));
+                const snap = await getDocs(q);
+                snap.forEach(d => {
+                    const data = d.data();
+                    const price = safeNum(data.preco || data.price || data.valor || 0);
+                    productsCache.push({
+                        id: d.id,
+                        sku: data.numero || data.sku || d.id,
+                        name: data.produto || data.name || data.titulo || '',
+                        price,
+                        raw: data
+                    });
+                });
+                if (productsCache.length === 0) productsList.innerHTML = '<div class="muted-small">Sem produtos na fonte seleccionada.</div>';
+            } catch (err) {
+                console.error(err);
+                productsList.innerHTML = '<div class="muted-small">Erro ao carregar produtos.</div>';
+            }
+        }
+
+        refreshProductsBtn.addEventListener('click', async () => { await loadProducts(); renderProductsList(); });
+
+        filterProducts.addEventListener('input', () => renderProductsList());
+
+        function renderProductsList() {
+            const q = (filterProducts.value || '').trim().toLowerCase();
+            productsList.innerHTML = '';
+            const list = q ? productsCache.filter(p => (p.name || '').toLowerCase().includes(q) || (p.sku || '').toLowerCase().includes(q)) : productsCache;
+            if (!list || list.length === 0) {
+                productsList.innerHTML = '<div class="muted-small">Nenhum produto encontrado.</div>'; return;
+            }
+            list.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'product-row';
+                div.innerHTML = `<div><strong>${escapeHtml(p.name)}</strong><div class="muted-small">${escapeHtml(p.sku)}</div></div>
+                       <div style="display:flex;gap:8px;align-items:center">
+                         <div class="muted-small">${formatCurrency(p.price)}</div>
+                         <button class="btn small addToCartBtn" data-sku="${escapeHtml(p.sku)}" data-name="${escapeHtml(p.name)}" data-price="${p.price}">Adicionar</button>
+                       </div>`;
+                productsList.appendChild(div);
+            });
+
+            productsList.querySelectorAll('.addToCartBtn').forEach(b => {
+                b.addEventListener('click', () => {
+                    const sku = b.dataset.sku;
+                    const name = b.dataset.name;
+                    const price = safeNum(b.dataset.price);
+                    addToCart({ sku, name, price });
+                });
+            });
+        }
+
+        function addToCart(item) {
+            const existing = cart.find(c => c.sku === item.sku);
+            if (existing) existing.qty = (existing.qty || 0) + 1;
+            else cart.push({ sku: item.sku, name: item.name, qty: 1, price: safeNum(item.price) });
+            renderCart();
+        }
+
+        function renderCart() {
+            cartList.innerHTML = '';
+            let total = 0; let items = 0;
+            cart.forEach((c, i) => {
+                const subtotal = safeNum(c.qty) * safeNum(c.price);
+                total += subtotal; items += safeNum(c.qty);
+                const div = document.createElement('div');
+                div.className = 'cart-row';
+                div.innerHTML = `<div style="flex:1"><strong>${escapeHtml(c.name)}</strong><div class="muted-small">${escapeHtml(c.sku)}</div></div>
+                       <div style="width:120px;display:flex;align-items:center;gap:6px;justify-content:flex-end">
+                         <button class="ghost dec" data-i="${i}">-</button>
+                         <div>${c.qty}</div>
+                         <button class="ghost inc" data-i="${i}">+</button>
+                       </div>
+                       <div style="width:110px;text-align:right">${formatCurrency(c.price)}</div>
+                       <div style="width:110px;text-align:right">${formatCurrency(subtotal)}</div>
+                       <div><button class="ghost rem" data-i="${i}" style="margin-left:8px">Rem</button></div>`;
+                cartList.appendChild(div);
+            });
+
+            modalItemsCount.textContent = items;
+            modalTotal.textContent = formatCurrency(total);
+
+            cartList.querySelectorAll('.inc').forEach(b => b.addEventListener('click', e => {
+                const i = parseInt(b.dataset.i, 10); cart[i].qty = (cart[i].qty || 0) + 1; renderCart();
+            }));
+            cartList.querySelectorAll('.dec').forEach(b => b.addEventListener('click', e => {
+                const i = parseInt(b.dataset.i, 10); cart[i].qty = Math.max(1, (cart[i].qty || 0) - 1); renderCart();
+            }));
+            cartList.querySelectorAll('.rem').forEach(b => b.addEventListener('click', e => {
+                const i = parseInt(b.dataset.i, 10); cart.splice(i, 1); renderCart();
+            }));
+        }
+
+        saveTableBtn.addEventListener('click', async () => {
+            if (!currentMesa) return;
+            try {
+                const total = cart.reduce((s, it) => s + (safeNum(it.qty) * safeNum(it.price)), 0);
+                const docRef = doc(db, 'mesas', currentMesa.id);
+                await updateDoc(docRef, { cart, total, estado: cart.length ? 'ocupada' : 'livre', updatedAt: serverTimestamp() });
+                alert('Mesa guardada.');
+                tableModal.style.display = 'none';
+                tableModal.setAttribute('aria-hidden', 'true');
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao guardar mesa — ver consola');
+            }
+        });
+
+        clearTableBtn.addEventListener('click', async () => {
+            if (!currentMesa) return;
+            if (!confirm('Remover todos os itens desta mesa?')) return;
+            try {
+                const docRef = doc(db, 'mesas', currentMesa.id);
+                await updateDoc(docRef, { cart: [], total: 0, estado: 'livre', updatedAt: serverTimestamp() });
+                cart = [];
+                renderCart();
+                alert('Mesa limpa.');
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao limpar mesa — ver consola');
+            }
+        });
+
+        sendToPOSBtn.addEventListener('click', async () => {
+            if (!currentMesa) return;
+            if (!cart || cart.length === 0) { alert('Nada para enviar.'); return; }
+            if (!confirm('Enviar consumos desta mesa para o POS (registar venda) e limpar a mesa?')) return;
+
+            try {
+                const sale = {
+                    mesaId: currentMesa.id,
+                    mesaName: currentMesa.nome || currentMesa.name || null,
+                    items: cart.map(it => ({ sku: it.sku, name: it.name, qty: it.qty, price: safeNum(it.price) })),
+                    total: cart.reduce((s, it) => s + (safeNum(it.qty) * safeNum(it.price)), 0),
+                    method: 'mesa',
+                    createdAt: serverTimestamp(),
+                    createdBy: currentUser ? currentUser.uid : null
+                };
+                await addDoc(collection(db, 'vendas'), sale);
+
+                const mesaRef = doc(db, 'mesas', currentMesa.id);
+                const snap = await getDoc(mesaRef);
+                const existing = snap.exists() ? snap.data() : {};
+                const history = Array.isArray(existing.history) ? existing.history.slice() : [];
+                const historyEntry = { createdAt: Timestamp.now(), items: sale.items, total: sale.total, by: currentUser ? currentUser.uid : null };
+                history.push(historyEntry);
+
+                await updateDoc(mesaRef, { cart: [], total: 0, estado: 'livre', updatedAt: serverTimestamp(), history });
+
+                sessionStorage.setItem("posFromMesa", JSON.stringify({
+                    mesaId: currentMesa.id,
+                    mesaName: currentMesa.nome || currentMesa.name,
+                    items: sale.items,
+                    total: sale.total
+                }));
+
+                cart = [];
+                renderCart();
+                tableModal.style.display = 'none';
+                tableModal.setAttribute('aria-hidden', 'true');
+
+                window.location.href = "pos.html";
+
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao enviar para POS — ver consola');
+            }
+        });
+
+        renameTableBtn.addEventListener('click', async () => {
+            if (!currentMesa) return;
+            const novo = prompt('Novo nome para a mesa', currentMesa.nome || currentMesa.name || '');
+            if (novo === null) return;
+            const v = (novo || '').trim();
+            if (!v) { alert('Nome inválido'); return; }
+            try {
+                await updateDoc(doc(db, 'mesas', currentMesa.id), { nome: v, updatedAt: serverTimestamp() });
+                modalTableName.textContent = v;
+                alert('Nome actualizado.');
+            } catch (err) { console.error(err); alert('Erro ao renomear mesa — ver consola'); }
+        });
+
+        deleteTableBtn.addEventListener('click', async () => {
+            if (!currentMesa) return;
+            if (!confirm('Eliminar esta mesa e todo o seu histórico? Esta operação é irreversível.')) return;
+            try {
+                await deleteDoc(doc(db, 'mesas', currentMesa.id));
+                tableModal.style.display = 'none';
+                tableModal.setAttribute('aria-hidden', 'true');
+                alert('Mesa eliminada.');
+            } catch (err) { console.error(err); alert('Erro ao eliminar mesa — ver consola'); }
+        });
+
+        (async function preloadProductsOnce() {
+            try { await loadProducts(); } catch (e) {  }
+        })();
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && tableModal.style.display === 'flex') {
+                tableModal.style.display = 'none';
+                tableModal.setAttribute('aria-hidden', 'true');
+            }
+        });
+
+        console.log('[Finded][Mesas] carregado');
+    </script>
+</body>
+
+</html>
+

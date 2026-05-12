@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="pt">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Definições da Conta — Finded</title>
+  <link rel="icon" type="image/x-icon" href="../images/Finded_Logobg.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/ui-fixes.css">
+  <style>
+    :root {
+      --bg: #0f1724;
+      --card: #0b1220;
+      --muted: #9aa4b2;
+      --accent: #6ee7b7;
+      --neutral-btn-bg: rgba(255, 255, 255, 0.03);
+      --neutral-btn-border: rgba(255, 255, 255, 0.06);
+      --danger-border: rgba(255, 80, 80, 0.12);
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0
+    }
+
+    body {
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(110, 231, 183, 0.03), transparent),
+        radial-gradient(900px 450px at 90% 90%, rgba(99, 102, 241, 0.02), transparent),
+        var(--bg);
+      color: #e6eef6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--card), rgba(255, 255, 255, 0.02));
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6);
+      width: 760px;
+      max-width: 98%;
+    }
+
+    h1 {
+      margin: 0 0 6px 0;
+      color: #fff;
+      font-size: 20px
+    }
+
+    p.sub {
+      color: var(--muted);
+      margin: 0 0 18px 0
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 18px;
+      align-items: start
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 6px
+    }
+
+    .input,
+    .select {
+      width: 100%;
+      appearance: none;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: transparent;
+      padding: 10px 12px;
+      border-radius: 10px;
+      color: inherit;
+      outline: none;
+      font-size: 15px;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      align-items: center
+    }
+
+    .btn {
+      background: var(--neutral-btn-bg);
+      border: 1px solid var(--neutral-btn-border);
+      color: #e6eef6;
+      padding: 10px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .btn.ghost {
+      background: transparent;
+      border: 1px solid var(--neutral-btn-border);
+      color: var(--muted)
+    }
+
+    .logout-btn {
+      background: #111827;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      color: #f7fafc;
+      padding: 12px;
+      border-radius: 12px
+    }
+
+    .delete-btn {
+      background: transparent;
+      border: 1px solid rgba(255, 80, 80, 0.12);
+      color: #ff9b9b;
+      padding: 12px;
+      border-radius: 12px
+    }
+
+    .back-btn {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--muted);
+      padding: 12px;
+      border-radius: 12px
+    }
+
+    .info-card {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.02)
+    }
+
+    .small {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px
+    }
+
+    .popup {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 16px;
+      border-radius: 8px;
+      color: #fff;
+      opacity: 0;
+      transition: opacity .25s;
+      z-index: 9999;
+      pointer-events: none
+    }
+
+    .popup.show {
+      opacity: 1;
+      pointer-events: auto
+    }
+
+    .popup.success {
+      background: #16a34a
+    }
+
+    .popup.error {
+      background: #dc2626
+    }
+
+    @media(max-width:880px) {
+      .grid {
+        grid-template-columns: 1fr
+      }
+
+      .card {
+        padding: 20px
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="card" role="main" aria-labelledby="settings-title">
+    <h1 id="settings-title">Definições da Conta</h1>
+    <p class="sub">Altera as tuas preferências, envia redefinição de password ou termina sessão.</p>
+
+    <div class="grid">
+      <section>
+        <form id="settingsForm">
+          <div style="margin-bottom:12px">
+            <label for="email">E-mail</label>
+            <input id="email" class="input" type="email" readonly>
+            <div class="small">E-mail associado à conta (não editável).</div>
+          </div>
+
+          <div style="margin-bottom:12px">
+
+          </div>
+
+          <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
+
+            <button type="button" id="resetPwdBtn" class="btn ghost">Repor password</button>
+          </div>
+        </form>
+      </section>
+
+      <aside class="info-card">
+        <p style="margin:0 0 10px 0"><strong>Estado da conta</strong></p>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <button id="logoutBtn" class="logout-btn">Terminar sessão</button>
+          <button id="deleteAccountBtn" class="delete-btn">Eliminar conta (irreversível)</button>
+          <button id="backBtn" class="back-btn">← Voltar ao Dashboard</button>
+        </div>
+
+        <p class="small" style="margin-top:12px"></p>
+      </aside>
+    </div>
+  </main>
+
+  <div id="settingsPopup" class="popup" aria-hidden="true"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUser, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBtM5iTgEJu3DW5H3QNOCH327Xv9Bmvyk4",
+      authDomain: "gestaodb-c7440.firebaseapp.com",
+      projectId: "gestaodb-c7440",
+      storageBucket: "gestaodb-c7440.firebasestorage.app",
+      messagingSenderId: "600106455001",
+      appId: "1:600106455001:web:407542f3c2fd18d3c6d3c8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    window.__firebase = { app, auth, db };
+
+    const emailEl = document.getElementById('email');
+    const nameEl = document.getElementById('name');
+    const adminBadge = document.getElementById('adminBadge');
+    const saveBtn = document.getElementById('saveBtn');
+    const resetPwdBtn = document.getElementById('resetPwdBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+    const backBtn = document.getElementById('backBtn');
+    const popupEl = document.getElementById('settingsPopup');
+
+    function showPopup(msg, type = 'success', ms = 2000) {
+      popupEl.textContent = (type === 'success' ? '✅ ' : '❌ ') + msg;
+      popupEl.className = 'popup show ' + (type === 'success' ? 'success' : 'error');
+      popupEl.setAttribute('aria-hidden', 'false');
+      setTimeout(() => { popupEl.className = 'popup'; popupEl.setAttribute('aria-hidden', 'true'); }, ms);
+    }
+
+    let currentUser = null;
+
+    async function ensureUserDoc(uid, emailValue) {
+      const userRef = doc(db, 'users', uid);
+      const snap = await getDoc(userRef);
+      if (!snap.exists()) {
+        await setDoc(userRef, {
+          email: emailValue,
+          admin: "user",
+          createdAt: serverTimestamp()
+        }, { merge: true });
+      }
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+      currentUser = user;
+      emailEl.value = user.email || '';
+      try {
+        await ensureUserDoc(user.uid, user.email || '');
+        const userRef = doc(db, 'users', user.uid);
+        const snap = await getDoc(userRef);
+        if (snap.exists()) {
+          const data = snap.data();
+          nameEl.value = data.name || '';
+          adminBadge.textContent = `Tipo: ${data.admin || 'user'}`;
+        } else {
+          nameEl.value = '';
+          adminBadge.textContent = 'Tipo: user';
+        }
+      } catch (err) {
+        console.error('Erro ao carregar user:', err);
+
+      }
+    });
+
+    document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) { showPopup('Utilizador não autenticado', 'error'); return; }
+      const uid = currentUser.uid;
+      const userRef = doc(db, 'users', uid);
+      try {
+        const snap = await getDoc(userRef);
+        if (snap.exists()) {
+          await updateDoc(userRef, {
+            name: nameEl.value.trim(),
+            updatedAt: serverTimestamp()
+          });
+        } else {
+          await setDoc(userRef, {
+            name: nameEl.value.trim(),
+            email: currentUser.email,
+            admin: 'user',
+            createdAt: serverTimestamp()
+          }, { merge: true });
+        }
+        showPopup('Alterações guardadas', 'success');
+      } catch (err) {
+        console.error('Erro ao guardar:', err);
+        showPopup('Erro ao guardar alterações', 'error');
+      }
+    });
+
+    resetPwdBtn.addEventListener('click', async () => {
+      if (!currentUser || !currentUser.email) { showPopup('Sem email disponível', 'error'); return; }
+      try {
+        await sendPasswordResetEmail(auth, currentUser.email);
+        showPopup('Email de redefinição enviado', 'success');
+      } catch (err) {
+        console.error('Erro reset pwd:', err);
+        showPopup('Erro a enviar email', 'error');
+      }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        showPopup('Saiu da conta', 'success');
+        setTimeout(() => window.location.href = 'login.html', 700);
+      } catch (err) {
+        console.error('Erro logout:', err);
+        showPopup('Erro ao terminar sessão', 'error');
+      }
+    });
+
+    deleteAccountBtn.addEventListener('click', async () => {
+      if (!currentUser) { showPopup('Nenhum utilizador autenticado', 'error'); return; }
+      if (!confirm('Eliminar a tua conta é irreversível. Confirmar?')) return;
+
+      const pwd = prompt('Por favor confirma a tua password para eliminar a conta:');
+      if (!pwd) { showPopup('Password não fornecida. Cancelado.', 'error'); return; }
+
+      try {
+        const credential = EmailAuthProvider.credential(currentUser.email, pwd);
+        await reauthenticateWithCredential(currentUser, credential);
+      } catch (reauthErr) {
+        console.error('Falha reautenticação:', reauthErr);
+        showPopup('Reautenticação falhou (password inválida).', 'error', 3500);
+        return;
+      }
+
+      try {
+        await deleteDoc(doc(db, 'users', currentUser.uid)).catch(() => { });
+        await deleteUser(currentUser);
+        showPopup('Conta eliminada', 'success');
+        setTimeout(() => window.location.href = 'login.html', 900);
+      } catch (err) {
+        console.error('Erro eliminar conta:', err);
+        showPopup('Erro ao eliminar conta', 'error', 3500);
+      }
+    });
+
+    backBtn.addEventListener('click', () => {
+      window.location.href = 'main.html';
+    });
+
+    console.log('Settings page initialized. firebase.projectId=', firebaseConfig?.projectId || '(not set)');
+  </script>
+</body>
+
+</html>
+

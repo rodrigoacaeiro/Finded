@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="pt">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ementa — Finded</title>
+    <link rel="icon" type="image/x-icon" href="../images/Finded_Logobg.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/ui-fixes.css">
+    <style>
+        :root {
+            --bg: #071023;
+            --card: #0f1724;
+            --muted: #9aa4b2;
+            --muted-2: #93a0ad;
+            --accent: #6ee7b7;
+            --accent-2: #5eead4;
+            --glass: rgba(255, 255, 255, 0.03);
+            --radius: 12px;
+            font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            background: linear-gradient(180deg, #071023 0%, #081426 100%);
+            color: #e6eef6
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 28px auto;
+            padding: 18px
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px
+        }
+
+        .sub {
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center
+        }
+
+        .search {
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            background: transparent;
+            color: inherit;
+            min-width: 220px
+        }
+
+        .select {
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            background: transparent;
+            color: inherit
+        }
+
+        .btn {
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            border: none;
+            color: #032018;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(2, 6, 23, 0.5);
+        }
+
+        .btn.ghost {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--muted)
+        }
+
+        .muted {
+            color: var(--muted)
+        }
+
+        .card {
+            background: linear-gradient(180deg, var(--card), rgba(255, 255, 255, 0.02));
+            border-radius: var(--radius);
+            padding: 18px;
+            box-shadow: 0 12px 30px rgba(2, 6, 23, 0.6);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px;
+            margin-top: 18px
+        }
+
+        .menu-card {
+            background: var(--glass);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 170px;
+            position: relative;
+            transition: transform .12s ease, box-shadow .12s ease;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .menu-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 18px 36px rgba(2, 6, 23, 0.6);
+        }
+
+        .menu-thumb {
+            height: 110px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .menu-body {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .menu-title {
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .menu-meta {
+            color: var(--muted);
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .menu-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .action-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 6px 8px;
+            border-radius: 8px;
+            color: var(--muted);
+            cursor: pointer;
+            font-weight: 700
+        }
+
+        .action-btn.danger {
+            border-color: rgba(255, 77, 79, 0.12);
+            color: #ff8b8b
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 60
+        }
+
+        .modal {
+            background: linear-gradient(180deg, var(--card), rgba(255, 255, 255, 0.02));
+            border-radius: 12px;
+            padding: 18px;
+            width: 100%;
+            max-width: 720px;
+            box-shadow: 0 18px 48px rgba(2, 6, 23, 0.8)
+        }
+
+        .modal h3 {
+            margin: 0 0 8px 0
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .form-grid.full {
+            grid-template-columns: 1fr;
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--muted);
+            display: block;
+            margin-bottom: 6px
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: transparent;
+            color: inherit
+        }
+
+        textarea {
+            min-height: 80px
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 12px;
+        }
+
+        .small-muted {
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .empty {
+            padding: 24px;
+            border-radius: 10px;
+            text-align: center;
+            color: var(--muted)
+        }
+
+        @media(max-width:720px) {
+            .form-grid {
+                grid-template-columns: 1fr
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>Ementa — Gestão</h1>
+                <div class="sub">Gere a ementa.</div>
+            </div>
+
+            <div class="controls">
+                <input id="searchInput" class="search" placeholder="Procurar por nome ou categoria..." />
+                <select id="categoryFilter" class="select">
+                    <option value="">Todas as categorias</option>
+                </select>
+                <a class="muted back-link" href="main.html">← Voltar ao Dashboard</a>
+                <button id="addBtn" class="btn">+ Novo Item</button>
+            </div>
+        </header>
+
+        <section class="card">
+            <div id="statusBar" class="small-muted">A carregar cardápio...</div>
+
+            <div id="grid" class="grid" aria-live="polite"></div>
+
+            <div id="emptyState" class="empty" style="display:none">Nenhum item no cardápio. <button id="emptyAdd"
+                    class="btn" style="margin-left:8px">Adicionar primeiro item</button></div>
+        </section>
+    </div>
+
+    <div id="modalRoot" style="display:none"></div>
+
+    <script type="module">
+        import { auth, db } from "../js/firebase.js";
+        import {
+            collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy
+        } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+        const gridEl = document.getElementById('grid');
+        const statusBar = document.getElementById('statusBar');
+        const addBtn = document.getElementById('addBtn');
+        const modalRoot = document.getElementById('modalRoot');
+        const searchInput = document.getElementById('searchInput');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const emptyState = document.getElementById('emptyState');
+        const emptyAdd = document.getElementById('emptyAdd');
+
+        const COL = 'cardapio';
+        const colRef = collection(db, COL);
+
+        let items = [];
+        let categories = new Set();
+
+        function showStatus(msg, isError = false) {
+            statusBar.textContent = msg;
+            statusBar.style.color = isError ? '#ffb4b4' : '';
+        }
+
+        function formatCurrency(v) { return '€' + (Number(v) || 0).toFixed(2); }
+
+        function buildCard(item) {
+            const el = document.createElement('article');
+            el.className = 'menu-card';
+            el.dataset.id = item.id;
+
+            const thumbUrl = item.image || '';
+            const thumb = document.createElement('div');
+            thumb.className = 'menu-thumb';
+            thumb.style.backgroundImage = thumbUrl ? `url(${escapeHtml(thumbUrl)})` : `linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))`;
+            el.appendChild(thumb);
+
+            const body = document.createElement('div');
+            body.className = 'menu-body';
+            body.innerHTML = `
+        <div class="menu-title">${escapeHtml(item.name || '—')}</div>
+        <div class="menu-meta"><div class="small-muted">${escapeHtml(item.category || '')}</div><div style="font-weight:800">${formatCurrency(item.price)}</div></div>
+        <div class="small-muted" style="margin-top:6px;min-height:28px">${escapeHtml(item.description || '')}</div>
+      `;
+
+            const actions = document.createElement('div');
+            actions.className = 'menu-actions';
+            const editBtn = document.createElement('button');
+            editBtn.className = 'action-btn';
+            editBtn.textContent = 'Editar';
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openModal({ mode: 'edit', item });
+            });
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'action-btn danger';
+            delBtn.textContent = 'Eliminar';
+            delBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                if (!confirm(`Eliminar "${item.name}" do cardápio? Esta ação é irreversível.`)) return;
+                await handleDelete(item.id);
+            });
+
+            actions.appendChild(editBtn);
+            actions.appendChild(delBtn);
+            body.appendChild(actions);
+
+            el.appendChild(body);
+            return el;
+        }
+
+        function renderGrid(list) {
+            gridEl.innerHTML = '';
+            if (!list || list.length === 0) {
+                emptyState.style.display = 'block';
+                gridEl.style.display = 'none';
+                return;
+            }
+            emptyState.style.display = 'none';
+            gridEl.style.display = 'grid';
+            list.forEach(it => gridEl.appendChild(buildCard(it)));
+        }
+
+        async function loadMenu() {
+            showStatus('A carregar cardápio...');
+            try {
+                const q = query(colRef, orderBy('name'));
+                const snap = await getDocs(q);
+                items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                categories = new Set(items.map(i => i.category).filter(Boolean));
+                rebuildCategoryFilter();
+                applyFilters();
+                showStatus(`Itens carregados: ${items.length}`);
+            } catch (err) {
+                console.error('Erro ao carregar cardápio:', err);
+                if (err?.code?.includes('permission-denied')) {
+                    showStatus('Erro: sem permissões para aceder ao Firestore. Verifica as regras (permission-denied).', true);
+                } else {
+                    showStatus('Erro ao comunicar com Firestore: ' + (err.message || err), true);
+                }
+                items = [];
+                renderGrid([]);
+            }
+        }
+
+        function rebuildCategoryFilter() {
+            const cur = categoryFilter.value;
+            categoryFilter.innerHTML = '<option value="">Todas as categorias</option>';
+            Array.from(categories).sort().forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                categoryFilter.appendChild(opt);
+            });
+            if (cur) categoryFilter.value = cur;
+        }
+
+        function applyFilters() {
+            const q = (searchInput.value || '').trim().toLowerCase();
+            const cat = categoryFilter.value;
+            const filtered = items.filter(it => {
+                if (cat && (it.category || '') !== cat) return false;
+                if (!q) return true;
+                return (it.name || '').toLowerCase().includes(q) || (it.category || '').toLowerCase().includes(q) || (it.description || '').toLowerCase().includes(q);
+            });
+            renderGrid(filtered);
+        }
+
+        async function handleAdd(data) {
+            showStatus('A criar item...');
+            try {
+                await addDoc(colRef, {
+                    name: data.name,
+                    price: Number(data.price) || 0,
+                    category: data.category || '',
+                    description: data.description || '',
+                    image: data.image || ''
+                });
+                await loadMenu();
+                closeModal();
+            } catch (err) {
+                console.error('Erro a criar item:', err);
+                alert('Erro ao criar item: ' + (err.message || err));
+            }
+        }
+
+        async function handleUpdate(id, data) {
+            try {
+                const ref = doc(db, COL, id);
+                await updateDoc(ref, {
+                    name: data.name,
+                    price: Number(data.price) || 0,
+                    category: data.category || '',
+                    description: data.description || '',
+                    image: data.image || ''
+                });
+                await loadMenu();
+                closeModal();
+            } catch (err) {
+                console.error('Erro a actualizar item:', err);
+                alert('Erro ao actualizar item: ' + (err.message || err));
+            }
+        }
+
+        async function handleDelete(id) {
+            showStatus('A eliminar item...');
+            try {
+                await deleteDoc(doc(db, COL, id));
+                await loadMenu();
+                showStatus('Item eliminado');
+            } catch (err) {
+                console.error('Erro a eliminar item:', err);
+                if (err?.code?.includes('permission-denied')) alert('Sem permissões para eliminar este item. Verifica as regras do Firestore.');
+                else alert('Erro ao eliminar item: ' + (err.message || err));
+                showStatus('Erro ao eliminar item', true);
+            }
+        }
+
+        function openModal(opts = { mode: 'add', item: null }) {
+            modalRoot.innerHTML = '';
+            modalRoot.style.display = 'block';
+
+            const backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop';
+            backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeModal(); });
+
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+        <h3>${opts.mode === 'add' ? 'Adicionar item' : 'Editar item'}</h3>
+        <form id="modalForm">
+          <div class="form-grid">
+            <div>
+              <label>Nome</label>
+              <input type="text" name="name" required />
+            </div>
+            <div>
+              <label>Preço (€)</label>
+              <input type="number" name="price" step="0.01" required />
+            </div>
+            <div>
+              <label>Categoria</label>
+              <input type="text" name="category" />
+            </div>
+            <div>
+              <label>Imagem (URL)</label>
+              <input type="text" name="image" placeholder="https://..." />
+            </div>
+            <div class="form-grid full" style="grid-column:1/-1">
+              <label>Descrição</label>
+              <textarea name="description"></textarea>
+            </div>
+            <div class="form-grid full" style="grid-column:1/-1;display:flex;align-items:center;gap:12px">
+              <div style="flex:1">
+                <div class="small-muted">Pré-visualização da imagem</div>
+                <div id="imgPreview" style="height:72px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background-size:cover;background-position:center;margin-top:8px"></div>
+              </div>
+              <div style="min-width:140px;text-align:right">
+                <div class="small-muted">Ações</div>
+                <div style="margin-top:8px">
+                  <button type="submit" class="btn">${opts.mode === 'add' ? 'Criar' : 'Guardar'}</button>
+                  <button type="button" class="btn ghost" id="cancelModal" style="margin-left:8px">Cancelar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      `;
+            backdrop.appendChild(modal);
+            modalRoot.appendChild(backdrop);
+
+            const form = modal.querySelector('#modalForm');
+            const preview = modal.querySelector('#imgPreview');
+            if (opts.mode === 'edit' && opts.item) {
+                form.name.value = opts.item.name || '';
+                form.price.value = opts.item.price || '';
+                form.category.value = opts.item.category || '';
+                form.description.value = opts.item.description || '';
+                form.image.value = opts.item.image || '';
+                preview.style.backgroundImage = opts.item.image ? `url(${escapeHtml(opts.item.image)})` : '';
+            }
+
+            form.image.addEventListener('input', (e) => {
+                const v = e.target.value.trim();
+                preview.style.backgroundImage = v ? `url(${escapeHtml(v)})` : '';
+            });
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const data = {
+                    name: form.name.value.trim(),
+                    price: parseFloat(form.price.value) || 0,
+                    category: form.category.value.trim(),
+                    description: form.description.value.trim(),
+                    image: form.image.value.trim()
+                };
+                if (!data.name) return alert('Nome é obrigatório.');
+                if (opts.mode === 'add') {
+                    await handleAdd(data);
+                } else {
+                    await handleUpdate(opts.item.id, data);
+                }
+            });
+
+            modal.querySelector('#cancelModal').addEventListener('click', closeModal);
+        }
+
+        function closeModal() {
+            modalRoot.innerHTML = '';
+            modalRoot.style.display = 'none';
+        }
+
+        function escapeHtml(s) {
+            try { return String(s).replace(/"/g, '%22').replace(/'/g, '%27'); } catch (e) { return ''; }
+        }
+
+        addBtn.addEventListener('click', () => openModal({ mode: 'add' }));
+        emptyAdd.addEventListener('click', () => openModal({ mode: 'add' }));
+        searchInput.addEventListener('input', () => applyFilters());
+        categoryFilter.addEventListener('change', () => applyFilters());
+
+        onAuthStateChanged(auth, (user) => {
+            loadMenu();
+        });
+
+        window._cardapio = {
+            reload: loadMenu
+        };
+    </script>
+</body>
+
+</html>
+

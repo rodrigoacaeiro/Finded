@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Registar — Finded</title>
+    <link rel="icon" type="image/x-icon" href="../images/Finded_Logobg.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/ui-fixes.css">
+    <style>
+        :root {
+            --bg: #0f1724;
+            --card: #0b1220;
+            --muted: #9aa4b2;
+            --accent: #6ee7b7;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            background: radial-gradient(1200px 600px at 10% 10%, rgba(110, 231, 183, 0.06), transparent),
+                radial-gradient(900px 450px at 90% 90%, rgba(99, 102, 241, 0.04), transparent),
+                var(--bg);
+            color: #e6eef6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .card {
+            background: linear-gradient(180deg, var(--card), rgba(255, 255, 255, 0.02));
+            border-radius: 14px;
+            padding: 28px;
+            box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6);
+            width: 420px;
+        }
+
+        h2 {
+            margin: 0 0 6px 0;
+            color: #fff;
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px;
+            margin: 0 0 18px 0;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .input {
+            appearance: none;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: transparent;
+            padding: 12px 14px;
+            border-radius: 10px;
+            color: inherit;
+            outline: none;
+            font-size: 15px;
+        }
+
+        .input:focus {
+            box-shadow: 0 0 0 4px rgba(110, 231, 183, 0.06);
+            border-color: rgba(110, 231, 183, 0.25);
+        }
+
+        .btn {
+            background: linear-gradient(90deg, var(--accent), #5eead4);
+            border: none;
+            color: #032018;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 15px;
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.06);
+        }
+
+        .error {
+            color: #ffb4b4;
+            font-size: 13px;
+            min-height: 18px;
+        }
+
+        .password-wrap {
+            position: relative;
+        }
+
+        .toggle-pass {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .popup {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity .25s ease;
+            z-index: 9999;
+        }
+
+        .popup.show {
+            opacity: 1;
+        }
+
+        .popup.success {
+            background: #2d8a4d;
+        }
+
+        .popup.error {
+            background: #b33a3a;
+        }
+
+        @media(max-width:480px) {
+            .card {
+                width: 100%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="card" role="main" aria-labelledby="register-title">
+        <h2 id="register-title">Criar conta</h2>
+        <p class="muted">Preenche o e-mail e escolhe uma palavra-passe.</p>
+
+        <form id="registerForm" novalidate>
+            <div>
+                <label for="email">E-mail</label>
+                <input class="input" id="email" type="email" required autocomplete="email" />
+                <div id="emailError" class="error" aria-live="polite"></div>
+            </div>
+
+            <div>
+                <label for="password">Palavra-passe</label>
+                <div class="password-wrap">
+                    <input class="input" id="password" type="password" minlength="6" placeholder="••••••" required
+                        autocomplete="new-password" />
+                    <button type="button" id="togglePass" class="toggle-pass"
+                        aria-label="Mostrar palavra-passe">Mostrar</button>
+                </div>
+                <div id="passError" class="error" aria-live="polite"></div>
+            </div>
+
+            <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
+                <button class="btn" type="submit" id="submitBtn">Criar conta</button>
+                <a class="muted" href="login.html" style="text-decoration:none">Voltar</a>
+            </div>
+        </form>
+    </aside>
+
+    <div id="popup" class="popup" role="status" aria-live="polite"></div>
+
+    <script type="module">
+        import { auth, db } from "../js/firebase.js";
+        import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+        import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+        const form = document.getElementById('registerForm');
+        const email = document.getElementById('email');
+        const password = document.getElementById('password');
+        const emailError = document.getElementById('emailError');
+        const passError = document.getElementById('passError');
+        const submitBtn = document.getElementById('submitBtn');
+        const togglePass = document.getElementById('togglePass');
+        const popup = document.getElementById('popup');
+
+        function showPopup(message, type = 'success', ms = 3000) {
+            popup.textContent = message;
+            popup.className = `popup show ${type === 'success' ? 'success' : 'error'}`;
+            clearTimeout(popup._tid);
+            popup._tid = setTimeout(() => popup.classList.remove('show'), ms);
+        }
+
+        togglePass.addEventListener('click', () => {
+            const t = password.type === 'password' ? 'text' : 'password';
+            password.type = t;
+            togglePass.textContent = t === 'password' ? 'Mostrar' : 'Ocultar';
+        });
+
+        function validateEmail() {
+            const val = email.value.trim();
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!val) { emailError.textContent = 'O e-mail é obrigatório.'; return false; }
+            if (!re.test(val)) { emailError.textContent = 'Insere um e-mail válido.'; return false; }
+            emailError.textContent = ''; return true;
+        }
+        function validatePassword() {
+            const val = password.value;
+            if (!val) { passError.textContent = 'A palavra-passe é obrigatória.'; return false; }
+            if (val.length < 6) { passError.textContent = 'A palavra-passe tem de ter pelo menos 6 caracteres.'; return false; }
+            passError.textContent = ''; return true;
+        }
+
+        email.addEventListener('input', validateEmail);
+        password.addEventListener('input', validatePassword);
+
+        async function ensureUserDoc(uid, emailValue) {
+            try {
+                const userRef = doc(db, 'users', uid);
+                const snap = await getDoc(userRef);
+                if (!snap.exists()) {
+                    await setDoc(userRef, {
+                        email: emailValue || null,
+                        admin: 'user',
+                        createdAt: serverTimestamp()
+                    });
+                }
+            } catch (err) {
+                console.error('Erro em ensureUserDoc:', err);
+            }
+        }
+
+        function friendlyFirebaseError(err) {
+            if (!err) return 'Erro desconhecido';
+            const code = err.code || '';
+            switch (code) {
+                case 'auth/email-already-in-use': return 'Este e-mail já está em uso.';
+                case 'auth/invalid-email': return 'E-mail inválido.';
+                case 'auth/operation-not-allowed': return 'Operação não permitida.';
+                case 'auth/weak-password': return 'Palavra-passe fraca. Usa pelo menos 6 caracteres.';
+                default:
+                    return err.message || code || 'Erro ao criar conta';
+            }
+        }
+
+        async function signUp(emailVal, passVal) {
+            if (!auth || !db) {
+                showPopup('Erro de configuração: auth/db não inicializados. Vê a consola.', 'error', 5000);
+                console.error('auth or db missing:', { auth, db });
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Criar conta';
+                return;
+            }
+
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, emailVal, passVal);
+                await ensureUserDoc(cred.user.uid, cred.user.email);
+                showPopup('Conta criada com sucesso! A ser redirecionado...', 'success', 2500);
+                setTimeout(() => window.location.href = 'login.html', 900);
+            } catch (err) {
+                console.error('Erro createUserWithEmailAndPassword:', err);
+                const msg = friendlyFirebaseError(err);
+                showPopup(msg, 'error', 5000);
+                emailError.textContent = msg;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Criar conta';
+            }
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            emailError.textContent = '';
+            passError.textContent = '';
+
+            const okEmail = validateEmail();
+            const okPass = validatePassword();
+            if (!okEmail || !okPass) return;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'A processar...';
+
+            await signUp(email.value.trim(), password.value);
+        });
+    </script>
+</body>
+
+</html>
+

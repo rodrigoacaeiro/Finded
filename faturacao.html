@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="pt">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Finded — Faturação</title>
+  <link rel="icon" type="image/x-icon" href="../images/Finded_Logobg.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/ui-fixes.css">
+  <style>
+    :root {
+      --bg: #071023;
+      --card: #0f1724;
+      --muted: #9aa4b2;
+      --accent: #6ee7b7;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: linear-gradient(180deg, #071023 0%, #081426 100%);
+      color: #e6eef6;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 28px auto;
+      padding: 18px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      background: linear-gradient(90deg, var(--accent), #5eead4);
+      border: none;
+      color: #032018;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .ghost {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 8px;
+      border-radius: 8px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .card {
+      background: var(--card);
+      padding: 16px;
+      border-radius: 12px;
+      margin-top: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      color: #e6eef6;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    tbody td {
+      padding: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.02);
+    }
+
+    .form-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    input,
+    select {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 8px;
+      border-radius: 8px;
+      color: inherit;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .small {
+      font-size: 13px;
+    }
+
+    .right {
+      text-align: right;
+    }
+
+    .errorRow {
+      color: #ffb4b4;
+      padding: 12px;
+    }
+
+    #invoiceModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    #invoiceModal .modal-content {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 600px;
+      width: 90%;
+      position: relative;
+    }
+
+    #invoiceModal .modal-content table th,
+    #invoiceModal .modal-content table td {
+      padding: 6px;
+      font-size: 13px;
+    }
+
+    #invoiceModal button.closeModal {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div>
+        <h1 style="margin:0">Faturação — Finded</h1>
+        <div class="muted">Criar, listar e gerir faturas</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <a class="muted back-link" href="main.html">← Voltar ao Dashboard</a>
+        <button type="button" class="btn" id="newInvBtn">Nova Fatura</button>
+        <button type="button" class="ghost" id="logoutBtn">Sair</button>
+      </div>
+    </div>
+
+    <section class="card" id="listSection">
+      <h3 style="margin-top:0">Últimas Faturas</h3>
+      <div style="overflow:auto">
+        <table aria-describedby="invoice-list">
+          <thead>
+            <tr>
+              <th>Ref</th>
+              <th>Cliente</th>
+              <th>Data</th>
+              <th class="right">Total</th>
+              <th>Estado</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="invoicesTbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" id="editorSection" style="display:none">
+      <h3 style="margin-top:0">Nova Fatura</h3>
+      <div class="form-row">
+        <input id="invRef" placeholder="Ref (ex: F-2025-1002)" />
+        <input id="invClient" placeholder="Nome do cliente" style="flex:1" />
+        <input id="invDate" type="date" style="width:160px" />
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <h4 style="margin:0 0 8px 0">Linhas</h4>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="productSelect" style="min-width:240px"></select>
+          <input id="lineQty" type="number" placeholder="Qtd" style="width:80px" />
+          <input id="linePrice" placeholder="Preço" style="width:120px" />
+          <button class="btn" id="addLineBtn">Adicionar</button>
+        </div>
+        <div style="margin-top:12px;overflow:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Nº</th>
+                <th>Produto</th>
+                <th>Qtd</th>
+                <th>Preço</th>
+                <th class="right">Subtotal</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="linesTbody"></tbody>
+          </table>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:12px;align-items:center">
+          <div class="muted small">Total:</div>
+          <div id="invTotal" style="font-weight:800">€0.00</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn" id="saveInvBtn">Guardar Fatura</button>
+        <button class="ghost" id="cancelInvBtn">Cancelar</button>
+      </div>
+    </section>
+
+    <footer style="margin-top:18px;color:var(--muted);font-size:13px">Finded © <span id="year"></span></footer>
+  </div>
+
+  <div id="invoiceModal">
+    <div class="modal-content">
+      <button class="closeModal" id="closeModalBtn">&times;</button>
+      <h2 id="modalNumero"></h2>
+      <div><strong>Cliente:</strong> <span id="modalCliente"></span></div>
+      <div><strong>Data:</strong> <span id="modalData"></span></div>
+      <div><strong>Total:</strong> <span id="modalTotal"></span></div>
+      <div style="margin-top:12px;overflow:auto;max-height:200px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Nº</th>
+              <th>Produto</th>
+              <th>Qtd</th>
+              <th>Preço</th>
+              <th class="right">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody id="modalLines"></tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
+        <button class="btn" id="editInvBtn">Editar</button>
+        <button class="btn" id="deleteInvBtn" style="background:#f87171;color:#fff">Eliminar</button>
+        <button class="ghost closeModal" id="closeModalBtn2">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "../js/firebase.js";
+    import { collection, addDoc, getDocs, query, orderBy, Timestamp, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+    const invoicesTbody = document.getElementById('invoicesTbody');
+    const invRef = document.getElementById('invRef');
+    const invClient = document.getElementById('invClient');
+    const invDate = document.getElementById('invDate');
+    const productSelect = document.getElementById('productSelect');
+    const lineQty = document.getElementById('lineQty');
+    const linePrice = document.getElementById('linePrice');
+    const addLineBtn = document.getElementById('addLineBtn');
+    const linesTbody = document.getElementById('linesTbody');
+    const invTotal = document.getElementById('invTotal');
+    const newInvBtn = document.getElementById('newInvBtn');
+    const editorSection = document.getElementById('editorSection');
+    const listSection = document.getElementById('listSection');
+    const saveInvBtn = document.getElementById('saveInvBtn');
+    const cancelInvBtn = document.getElementById('cancelInvBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const yearEl = document.getElementById('year');
+    yearEl.textContent = new Date().getFullYear();
+
+    const invoiceModal = document.getElementById('invoiceModal');
+    const modalNumero = document.getElementById('modalNumero');
+    const modalCliente = document.getElementById('modalCliente');
+    const modalData = document.getElementById('modalData');
+    const modalTotal = document.getElementById('modalTotal');
+    const modalLines = document.getElementById('modalLines');
+    const closeModalBtns = [document.getElementById('closeModalBtn'), document.getElementById('closeModalBtn2')];
+    const editInvBtn = document.getElementById('editInvBtn');
+    const deleteInvBtn = document.getElementById('deleteInvBtn');
+
+    let lines = [];
+    let currentUser = null;
+
+    function ensureDb() {
+      if (!db || typeof db !== 'object') {
+        invoicesTbody.innerHTML = '<tr><td colspan="6" class="errorRow">Erro: Firestore não inicializado.</td></tr>';
+        return false;
+      }
+      return true;
+    }
+
+    onAuthStateChanged(auth, user => {
+      if (!user) { window.location.href = 'login.html'; return; }
+      currentUser = user;
+      populateProducts();
+      loadInvoicesFromFirebase();
+    });
+
+    async function populateProducts() {
+      if (!ensureDb()) return;
+
+      try {
+        const stockCol = collection(db, 'stock');
+        const q = query(stockCol, orderBy('produto'));
+        const querySnapshot = await getDocs(q);
+
+        productSelect.innerHTML = '<option value="">-- escolher produto --</option>';
+
+        querySnapshot.forEach(docSnap => {
+          const p = docSnap.data();
+          const opt = document.createElement('option');
+          const precoNum = Number(p.preco);
+          const temPreco = !isNaN(precoNum);
+          opt.value = p.numero || '';
+          opt.textContent = `${p.numero || ''} — ${p.produto || ''}${temPreco ? ` (€${precoNum.toFixed(2)})` : ''}`;
+          opt.dataset.price = temPreco ? precoNum : '';
+          productSelect.appendChild(opt);
+        });
+
+        if (querySnapshot.empty) {
+          const opt = document.createElement('option');
+          opt.value = '';
+          opt.textContent = 'Nenhum produto em stock';
+          productSelect.appendChild(opt);
+        }
+
+      } catch (err) {
+        console.error(err);
+        productSelect.innerHTML = '<option value="">Erro ao carregar stock</option>';
+      }
+    }
+
+    productSelect.addEventListener('change', () => {
+      const opt = productSelect.selectedOptions[0];
+      if (opt && opt.dataset.price) {
+        const v = parseFloat(opt.dataset.price);
+        linePrice.value = isNaN(v) ? '' : v.toFixed(2);
+      } else {
+        linePrice.value = '';
+      }
+    });
+
+    function renderLines() {
+      linesTbody.innerHTML = '';
+      let total = 0;
+      lines.forEach((l, i) => {
+        const subtotal = l.qty * l.price;
+        total += subtotal;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${escapeHtml(l.sku)}</td><td>${escapeHtml(l.name)}</td><td>${l.qty}</td><td>€${l.price.toFixed(2)}</td><td class="right">€${subtotal.toFixed(2)}</td>
+                        <td><button data-i="${i}" class="ghost rem">Remover</button></td>`;
+        linesTbody.appendChild(tr);
+      });
+      invTotal.textContent = `€${total.toFixed(2)}`;
+    }
+
+    addLineBtn.addEventListener('click', () => {
+      const sku = productSelect.value;
+      if (!sku) { alert('Escolhe um produto.'); return; }
+      const opt = productSelect.options[productSelect.selectedIndex];
+      const name = opt.textContent.split(' — ')[1];
+      const price = parseFloat(opt.dataset.price) || parseFloat(linePrice.value) || 0;
+      const qty = parseInt(lineQty.value, 10) || 1;
+      lines.push({ sku, name, qty, price });
+      renderLines();
+      lineQty.value = ''; linePrice.value = ''; productSelect.value = '';
+    });
+
+    linesTbody.addEventListener('click', (e) => {
+      if (e.target.classList.contains('rem')) {
+        const idx = parseInt(e.target.dataset.i, 10);
+        lines.splice(idx, 1);
+        renderLines();
+      }
+    });
+
+    newInvBtn.addEventListener('click', () => {
+      lines = [];
+      renderLines();
+      invRef.value = 'F-' + (new Date().getFullYear()) + '-' + (Math.floor(Math.random() * 9000) + 1000);
+      invClient.value = ''; invDate.value = new Date().toISOString().slice(0, 10);
+      editorSection.style.display = 'block'; listSection.style.display = 'none';
+    });
+
+    cancelInvBtn.addEventListener('click', () => {
+      editorSection.style.display = 'none'; listSection.style.display = 'block';
+    });
+
+    saveInvBtn.addEventListener('click', async () => {
+      if (!ensureDb()) return;
+      const numero = invRef.value.trim();
+      const cliente = invClient.value.trim();
+      const dateStr = invDate.value;
+      if (!numero || !cliente) { alert('Ref e Cliente obrigatórios'); return; }
+      if (lines.length === 0) { alert('Adiciona pelo menos uma linha'); return; }
+
+      const total = lines.reduce((s, l) => s + (l.qty * l.price), 0);
+      const estado = 'Pendente';
+      const dataTimestamp = dateStr ? Timestamp.fromDate(new Date(dateStr)) : Timestamp.now();
+
+      const payload = {
+        numero,
+        cliente,
+        data: dataTimestamp,
+        estado,
+        total,
+        lines,
+        paid: false,
+        createdBy: currentUser ? currentUser.uid : null,
+        createdAt: Timestamp.now()
+      };
+
+      try {
+        const colRef = collection(db, 'faturacao');
+        await addDoc(colRef, payload);
+        alert('Fatura guardada!');
+        editorSection.style.display = 'none'; listSection.style.display = 'block';
+        loadInvoicesFromFirebase();
+      } catch (err) {
+        console.error(err);
+        alert('Erro ao guardar fatura — ver consola');
+      }
+    });
+
+    async function loadInvoicesFromFirebase() {
+      invoicesTbody.innerHTML = '<tr><td colspan="6">A carregar faturas...</td></tr>';
+      if (!ensureDb()) return;
+
+      try {
+        const colRef = collection(db, 'faturacao');
+        const q = query(colRef, orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+        invoicesTbody.innerHTML = '';
+
+        querySnapshot.forEach(docSnap => {
+          const raw = docSnap.data();
+          const numero = raw.numero || '';
+          const cliente = raw.cliente || '';
+          const total = Number(raw.total || 0);
+          let dateStr = '';
+          if (raw.data && raw.data.seconds) dateStr = new Date(raw.data.seconds * 1000).toLocaleDateString();
+          else if (raw.createdAt && raw.createdAt.seconds) dateStr = new Date(raw.createdAt.seconds * 1000).toLocaleDateString();
+
+          const estadoHtml = raw.paid
+            ? `<span style="background:#d4edda;color:#155724;padding:2px 6px;border-radius:4px;">✅ Pago</span>`
+            : `<span style="background:#fff3cd;color:#856404;padding:2px 6px;border-radius:4px;">⏳ Pendente</span>`;
+
+          const viewObj = { id: docSnap.id, numero, cliente, dateStr, total, lines: raw.lines || [], paid: raw.paid };
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${escapeHtml(numero)}</td>
+            <td>${escapeHtml(cliente)}</td>
+            <td>${escapeHtml(dateStr)}</td>
+            <td class="right">€${Number(total).toFixed(2)}</td>
+            <td>
+              ${estadoHtml}
+              <button class="ghost togglePaid" data-id="${docSnap.id}" style="margin-left:6px">
+                ${raw.paid ? 'Anular Pagamento' : 'Marcar como Pago'}
+              </button>
+            </td>
+            <td>
+              <button class="ghost view" data-json='${escapeAttr(JSON.stringify(viewObj))}'>Ver</button>
+              <button class="ghost print" data-json='${escapeAttr(JSON.stringify(viewObj))}' style="margin-left:6px">Imprimir</button>
+              <button class="ghost delete" data-id="${docSnap.id}" style="margin-left:6px;background:#f87171;color:#fff">Eliminar</button>
+            </td>
+          `;
+          invoicesTbody.appendChild(tr);
+        });
+
+        if (invoicesTbody.children.length === 0) invoicesTbody.innerHTML = '<tr><td colspan="6" class="muted">Nenhuma fatura encontrada.</td></tr>';
+      } catch (err) {
+        console.error(err);
+        invoicesTbody.innerHTML = '<tr><td colspan="6">Erro ao carregar faturas — ver consola</td></tr>';
+      }
+    }
+
+    invoicesTbody.addEventListener('click', async (e) => {
+      const target = e.target;
+
+      if (target.classList.contains('togglePaid')) {
+        const docId = target.dataset.id;
+        const docRef = doc(db, 'faturacao', docId);
+        try {
+          const docSnap = await getDoc(docRef);
+          if (!docSnap.exists()) { alert('Fatura não encontrada'); return; }
+          const currentPaid = docSnap.data().paid || false;
+          await updateDoc(docRef, { paid: !currentPaid, estado: !currentPaid ? 'Pago' : 'Pendente' });
+          alert(`Fatura ${!currentPaid ? 'marcada como Paga' : 'Pagamento anulado'}`);
+          loadInvoicesFromFirebase();
+        } catch (err) {
+          console.error(err);
+          alert('Erro ao atualizar fatura — ver consola');
+        }
+      }
+
+      if (target.classList.contains('view')) {
+        try {
+          const inv = JSON.parse(target.dataset.json);
+          modalNumero.textContent = `Fatura ${inv.numero}`;
+          modalNumero.dataset.id = inv.id;
+          modalCliente.textContent = inv.cliente;
+          modalData.textContent = inv.dateStr;
+          modalTotal.textContent = `€${Number(inv.total).toFixed(2)}`;
+          modalLines.innerHTML = '';
+          inv.lines.forEach(l => {
+            const tr = document.createElement('tr');
+            const subtotal = l.qty * l.price;
+            tr.innerHTML = `<td>${escapeHtml(l.sku)}</td><td>${escapeHtml(l.name)}</td><td>${l.qty}</td><td>€${l.price.toFixed(2)}</td><td class="right">€${subtotal.toFixed(2)}</td>`;
+            modalLines.appendChild(tr);
+          });
+          invoiceModal.style.display = 'flex';
+
+          editInvBtn.onclick = () => {
+            invoiceModal.style.display = 'none';
+            editorSection.style.display = 'block';
+            listSection.style.display = 'none';
+            invRef.value = inv.numero;
+            invClient.value = inv.cliente;
+            try { invDate.value = new Date(inv.dateStr).toISOString().slice(0, 10); }
+            catch { invDate.value = new Date().toISOString().slice(0, 10); }
+            lines = inv.lines.map(l => ({ ...l }));
+            renderLines();
+          };
+        } catch (err) {
+          console.error(err);
+          alert('Erro ao abrir a fatura — ver consola');
+        }
+      }
+
+      if (target.classList.contains('delete')) {
+        const docId = target.dataset.id;
+        if (confirm('Tem a certeza que quer eliminar esta fatura?')) {
+          const docRef = doc(db, 'faturacao', docId);
+          try {
+            await deleteDoc(docRef);
+            alert('Fatura eliminada!');
+            loadInvoicesFromFirebase();
+          } catch (err) {
+            console.error(err);
+            alert('Erro ao eliminar fatura — ver consola');
+          }
+        }
+      }
+
+      function buildReceiptHtml(sale) {
+        let html = '<!doctype html><html><head><meta charset="utf-8"><title>Recibo ' + sale.id + '</title>' +
+          '<style>body{font-family:Inter,system-ui,Arial;padding:12px;color:#000}table{width:100%;border-collapse:collapse}td,th{padding:6px;border-bottom:1px solid #ddd}</style>' +
+          '</head><body>';
+        html += `<h3>Finded — Recibo</h3><div>ID: ${sale.id}</div><div>Data: ${new Date(sale.date).toLocaleString()}</div>`;
+        html += '<table>';
+        sale.items.forEach(it => { html += `<tr><td>${it.sku}</td><td>${it.name}</td><td style="text-align:center">${it.qty}x</td><td style="text-align:right">€${(it.qty * it.price).toFixed(2)}</td></tr>` });
+        html += `</table><div style="margin-top:8px;font-weight:800">Total: €${sale.total.toFixed(2)}</div>`;
+        html += '<div style="margin-top:12px;font-size:12px;color:#666">Obrigado pela sua compra!</div>';
+        html += '</body></html>';
+        return html;
+      }
+
+      if (target.classList.contains('print')) {
+        const inv = JSON.parse(target.dataset.json);
+        const w = window.open('', '_blank', 'width=400, height=600'); // Define o tamanho da pagina
+        if (!w) { alert('Pop-up bloqueado. Permite pop-ups para este site para imprimir.'); return; }
+
+        const linesHtml = (inv.lines || []).map(l => {
+          const subtotal = (l.qty * l.price).toFixed(2);
+          return `<tr>
+                    <td style="padding:6px;border:1px solid #ddd">${escapeHtml(l.sku)}</td>
+                    <td style="padding:6px;border:1px solid #ddd">${escapeHtml(l.name)}</td>
+                    <td style="padding:6px;border:1px solid #ddd;text-align:center">${l.qty}</td>
+                    <td style="padding:6px;border:1px solid #ddd;text-align:right">€${l.price.toFixed(2)}</td>
+                    <td style="padding:6px;border:1px solid #ddd;text-align:right">€${subtotal}</td>
+                  </tr>`;
+        }).join('');
+
+        const total = Number(inv.total || (inv.lines || []).reduce((s, l) => s + (l.qty * l.price), 0)).toFixed(2);
+
+        const printable = `<!doctype html>
+        <html>
+        <head><meta charset="utf-8"/><title>Fatura ${escapeHtml(inv.numero)}</title>
+        <style>body{font-family:Inter,system-ui,Arial;padding:12px;color:#000}table{width:100%;border-collapse:collapse}td,th{padding:6px;border-bottom:1px solid #ddd}</style>
+        </head>
+        <body>
+        <h1>Fatura ${escapeHtml(inv.numero)}</h1>
+        <div>Cliente: ${escapeHtml(inv.cliente)}</div>
+        <div>Data: ${escapeHtml(inv.dateStr)}</div>
+        <table>
+        <thead><tr><th>Nº</th><th>Produto</th><th>Qtd</th><th>Preço</th><th>Subtotal</th></tr></thead>
+        <tbody>${linesHtml}</tbody>
+        </table>
+        <div class="right"><strong>Total: €${total}</strong></div>
+        <script>window.onload=function(){window.print();};`;
+
+        w.document.open();
+        w.document.write(printable);
+        w.document.close();
+        w.onload = () => { try {w.print(); } catch(e) { } }; // Adicionei isto (faz para aparecer a coisa de impressão)
+      }
+    });
+
+    deleteInvBtn.onclick = async () => {
+      const docId = modalNumero.dataset.id;
+      if (!docId) return;
+      if (confirm('Tem a certeza que quer eliminar esta fatura?')) {
+        const docRef = doc(db, 'faturacao', docId);
+        try {
+          await deleteDoc(docRef);
+          alert('Fatura eliminada!');
+          invoiceModal.style.display = 'none';
+          loadInvoicesFromFirebase();
+        } catch (err) {
+          console.error(err);
+          alert('Erro ao eliminar fatura — ver consola');
+        }
+      }
+    };
+
+    closeModalBtns.forEach(btn => btn.onclick = () => invoiceModal.style.display = 'none');
+
+    logoutBtn.addEventListener('click', () => {
+      signOut(auth).then(() => { window.location.href = 'login.html'; }).catch(console.error);
+    });
+
+    function escapeHtml(s) {
+      if (s === null || s === undefined) return '';
+      return String(s).replace(/[&<>"']/g, m =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+    } function escapeAttr(s) {
+      if (s === null || s === undefined) return ''; return String(s).replace(/&/g, '&amp;').replace(/'/g, '&#39;'
+      ).replace(/"/g, '&quot;');
+    } </script>
+</body>
+
+</html>
+
